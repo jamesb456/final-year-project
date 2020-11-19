@@ -7,6 +7,7 @@ import project.util.midtools as mi
 from project.util.midtools import number_to_scientific_pitch
 
 
+
 def view_midi_information():
     # get all MIDI files in directory
     midi_files = glob.glob("mid/*.mid")
@@ -65,8 +66,15 @@ def pitch_time_curve(track: mido.MidiTrack):
     print(on_arr[:, 0])
     print(off_arr[:, 0])
 
-    plt.scatter(on_arr[:, 0], on_arr[:, 1], color="blue", label="Note on events")
-    plt.scatter(off_arr[:, 0], off_arr[:, 1], color="lightblue", label="Note off events")
+    plt.scatter(on_arr[:, 0], on_arr[:, 1], color="black", label="Note on events")
+    plt.scatter(off_arr[:, 0], off_arr[:, 1], color="gray", label="Note off events")
     plt.plot(all_arr[:, 0], all_arr[:, 1], linewidth=1, color="black")
+    plt.minorticks_on()
+
+    maj_locator = ticker.MultipleLocator(1920)
+
+    ax = plt.gca().xaxis
+    ax.set_major_locator(maj_locator)
+
     plt.legend()
     plt.show()

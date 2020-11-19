@@ -7,8 +7,8 @@ import project.util.lbdm as lbdm
 
 class LbdmTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.mid_file = mido.MidiFile("../mid/ttsong_iii_imuh3.mid")
-        self.test_track = self.mid_file.tracks[1]
+        self.mid_file = mido.MidiFile("../mid/test_midi_3.mid")
+        self.test_track = self.mid_file.tracks[0]
 
     def test_returns_valid_intervals(self):
         profile = lbdm.lbdm(self.test_track)
