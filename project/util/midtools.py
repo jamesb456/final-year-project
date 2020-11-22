@@ -76,5 +76,25 @@ def number_to_scientific_pitch(num: int) -> str:
     else:
         return scale[num % 12] + str(math.floor((num - 12) / 12.0))
 
-def get_notes(track: mido.MidiTrack) -> List[Tuple[int,int]]:
-    pass
+
+def get_note_timeline(track: mido.MidiTrack) -> List[Tuple[int, int]]:
+    """
+    Returns a list of tuples, each of which represents a note in the source MIDI track. The tuples contain:
+    1. The start time of the note (in ticks)
+    2. The note value being played
+
+    Args:
+        track: A track from a MIDI file
+
+    Returns: A list of tuples describing the notes in the MIDI track and when they are played.
+
+    """
+    notes = []
+    curr_time = 0
+    for i in range(len(track)):
+        if track[i].type == "note_on" and track[i].velocity != 0:  # ignore note off / running status note off messages
+            notes.append((curr_time + track[i].time, track[i].note))
+        curr_time += track[i].time
+
+    return notes
+

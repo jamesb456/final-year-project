@@ -5,7 +5,7 @@ import mido
 import numpy as np
 import project.util.midtools as mi
 from project.util.midtools import number_to_scientific_pitch
-
+from project.util.lbdm import lbdm
 
 
 def view_midi_information():
@@ -42,7 +42,8 @@ def view_midi_information():
     plt.show()
 
 
-def pitch_time_curve(track: mido.MidiTrack):
+def pitch_time_graph(track: mido.MidiTrack, ticks_per_beat: int):
+
     note_ons = []
     note_offs = []
     all_notes = []
@@ -66,15 +67,23 @@ def pitch_time_curve(track: mido.MidiTrack):
     print(on_arr[:, 0])
     print(off_arr[:, 0])
 
-    plt.scatter(on_arr[:, 0], on_arr[:, 1], color="black", label="Note on events")
-    plt.scatter(off_arr[:, 0], off_arr[:, 1], color="gray", label="Note off events")
-    plt.plot(all_arr[:, 0], all_arr[:, 1], linewidth=1, color="black")
+    plt.scatter(on_arr[:, 0] / ticks_per_beat, on_arr[:, 1], color="black", label="Note on events")
+    plt.scatter(off_arr[:, 0] / ticks_per_beat, off_arr[:, 1], color="gray", label="Note off events")
+    plt.plot(all_arr[:, 0] / ticks_per_beat, all_arr[:, 1], linewidth=1, color="black")
     plt.minorticks_on()
 
-    maj_locator = ticker.MultipleLocator(1920)
-
-    ax = plt.gca().xaxis
-    ax.set_major_locator(maj_locator)
-
+    plt.xlabel("Time elapsed (beats)")
+    plt.ylabel("Note")
     plt.legend()
+    plt.show()
+
+
+def lbdm_graph(track: mido.MidiTrack):
+    # temp, ignore rests for the moment
+    profile = lbdm(track, pitch_weight=0.33, ioi_weight=1-0.33, rest_weight=0)
+    plt.plot(profile, color="gray")
+    plt.scatter(range(len(profile)), profile, color="gray")
+    plt.xlabel("Note index")
+    plt.ylabel("Boundary Strength")
+    plt.title("LBDM test")
     plt.show()
