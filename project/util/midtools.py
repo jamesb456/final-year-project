@@ -1,6 +1,6 @@
-import math
+import math, mido
+import numpy as np
 
-import mido
 
 from typing import Dict, List, Tuple
 
@@ -77,7 +77,7 @@ def number_to_scientific_pitch(num: int) -> str:
         return scale[num % 12] + str(math.floor((num - 12) / 12.0))
 
 
-def get_note_timeline(track: mido.MidiTrack) -> List[Tuple[int, int]]:
+def get_note_timeline(track: mido.MidiTrack) -> np.ndarray:
     """
     Returns a list of tuples, each of which represents a note in the source MIDI track. The tuples contain:
     1. The start time of the note (in ticks)
@@ -96,5 +96,5 @@ def get_note_timeline(track: mido.MidiTrack) -> List[Tuple[int, int]]:
             notes.append((curr_time + track[i].time, track[i].note))
         curr_time += track[i].time
 
-    return notes
+    return np.array(notes)
 

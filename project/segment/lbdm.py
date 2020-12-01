@@ -1,8 +1,9 @@
 import mido
-from typing import List, Callable
+from typing import List, Callable, Tuple
 import numpy as np
+import matplotlib.pyplot as plt
 
-from .midtools import get_note_timeline
+from project.util.midtools import get_note_timeline
 
 
 def default_change(x1: int, x2: int) -> float:
@@ -17,7 +18,8 @@ def normalize(arr: np.array) -> np.array:
 
 
 def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
-         , degree_of_change: Callable[[int, int], float] = default_change) -> List[float]:
+         , degree_of_change: Callable[[int, int], float] = default_change) \
+        -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
     Creates a list of boundaries for the target MIDI track using the Local Boundary Detection Model.
     It looks at the intervals between notes in terms of pitch, inter-onsets (between the starts of notes pressing down)
@@ -34,7 +36,7 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
 
     """
     if len(track) < 2:
-        return []
+        return np.empty(1, ), (np.empty(1, ), np.empty((1,)), np.empty(1, ))
 
     # get only note_on / note_off events
     notes = get_note_timeline(track)
@@ -90,6 +92,6 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
     sequence_rests = normalize(np.array(sequence_rests))
 
     sequence_profile = (sequence_pitches * pitch_weight) + (sequence_iois * ioi_weight) + (sequence_rests * rest_weight)
-    return list(sequence_profile)
+    return sequence_profile, (sequence_pitches, sequence_iois, sequence_rests)
 
 

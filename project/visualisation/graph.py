@@ -5,7 +5,7 @@ import mido
 import numpy as np
 import project.util.midtools as mi
 from project.util.midtools import number_to_scientific_pitch
-from project.util.lbdm import lbdm
+from project.segment.lbdm import lbdm
 
 
 def view_midi_information():
@@ -80,10 +80,20 @@ def pitch_time_graph(track: mido.MidiTrack, ticks_per_beat: int):
 
 def lbdm_graph(track: mido.MidiTrack):
     # temp, ignore rests for the moment
-    profile = lbdm(track, pitch_weight=0.33, ioi_weight=1-0.33, rest_weight=0)
-    plt.plot(profile, color="gray")
-    plt.scatter(range(len(profile)), profile, color="gray")
-    plt.xlabel("Note index")
-    plt.ylabel("Boundary Strength")
-    plt.title("LBDM test")
+    (profile, (pitch, ioi, rest)) = lbdm(track, pitch_weight=0.33, ioi_weight=1-0.33, rest_weight=0)
+    notes = mi.get_note_timeline(track)
+    plt.style.use("fivethirtyeight")
+    plt.xlabel("Note interval index")
+    plt.ylabel("Boundary strength")
+    plt.title("LBDM test (pitch weight = 0.33, inter onset weight = 0.67)")
+    barwidth= 0.3
+    plt.bar(np.array(range(len(profile))), profile, label="LBDM overall boundary strength", width=barwidth)
+    plt.bar(np.array(range(len(profile))) + barwidth, pitch, label="Pitch boundary strength", width=barwidth)
+    plt.bar(np.array(range(len(profile))) - barwidth, ioi, label="Inter onset boundary strength", width=barwidth)
+
+    plt.tight_layout()
+    plt.legend()
+
     plt.show()
+
+

@@ -2,7 +2,7 @@ import unittest
 
 import mido
 
-import project.util.lbdm as lbdm
+import project.segment.lbdm as lbdm
 
 
 class LbdmTest(unittest.TestCase):
@@ -11,9 +11,10 @@ class LbdmTest(unittest.TestCase):
         self.test_track = self.mid_file.tracks[0]
 
     def test_returns_valid_intervals(self):
-        profile = lbdm.lbdm(self.test_track)
-        for elem in profile:
-            self.assertTrue(0.0 <= elem <= 1.0, "Normalised interval value not between 0.0 and 1.0.")
+        _, s_profile = lbdm.lbdm(self.test_track)
+        for arr in s_profile:
+            for elem in arr:
+                self.assertTrue(0.0 <= elem <= 1.0, "Normalised interval value not between 0.0 and 1.0.")
 
 
 if __name__ == '__main__':
