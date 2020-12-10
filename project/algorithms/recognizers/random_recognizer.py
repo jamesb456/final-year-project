@@ -1,6 +1,6 @@
 import random
 
-from project.algorithms.extract_recognizer import ExtractRecognizer
+from project.algorithms.recognizers.extract_recognizer import ExtractRecognizer
 
 
 class RandomRecognizer(ExtractRecognizer):

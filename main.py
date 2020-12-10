@@ -19,7 +19,6 @@ tracks: List[mido.MidiTrack] = md.tracks
 #         print(f"""Note:{mdt.number_to_scientific_pitch(msg.note)}
 # Time until msg played (beat): {msg.time / md.ticks_per_beat} Velocity {msg.velocity}""")
 
-gr.pitch_time_graph(tracks[0], md.ticks_per_beat)
+
 gr.lbdm_graph(tracks[0])
-gr.view_midi_information()
 

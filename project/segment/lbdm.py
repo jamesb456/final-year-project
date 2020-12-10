@@ -14,7 +14,10 @@ def default_change(x1: int, x2: int) -> float:
 
 
 def normalize(arr: np.array) -> np.array:
-    return arr / np.max(arr)
+    if len(arr) == 0:
+        return arr
+    else:
+        return arr / np.max(arr)
 
 
 def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
@@ -35,8 +38,8 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
     Returns: A boundary strength profile describing the places in which the music changes
 
     """
-    if len(track) < 2:
-        return np.empty(1, ), (np.empty(1, ), np.empty((1,)), np.empty(1, ))
+    # if len(track) < 2:
+    #     return np.empty(1, ), (np.empty(1, ), np.empty((1,)), np.empty(1, ))
 
     # get only note_on / note_off events
     notes = get_note_timeline(track)
