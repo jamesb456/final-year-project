@@ -11,6 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mido import MidiTrack, MidiFile
 from project.segment import lbdm
+from project.util.midtools import get_note_timeline
 
 
 def example(track: MidiTrack, ticks_per_beat: int):
@@ -26,13 +27,9 @@ def example(track: MidiTrack, ticks_per_beat: int):
         if boundary_strength > threshold:
             segmentation_indices.append(tuple_ind[0])
 
+    timeline = get_note_timeline(track)
     # form segments: create separate tracks for each of them??
     # or use separate class ?
-    print(segmentation_indices)
-    print(profile)
-    plt.style.use("fivethirtyeight")
-    plt.plot(profile)
-    plt.show()
 
     segment_tracks = []
     start_index = 0
@@ -51,6 +48,6 @@ def example(track: MidiTrack, ticks_per_beat: int):
 
 
 if __name__ == '__main__':
-    mid = MidiFile("../../../mid/ashover13.mid")
+    mid = MidiFile("../../../mid/busy_schedule_sax.mid")
 
     example(mid.tracks[0], mid.ticks_per_beat)

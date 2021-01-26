@@ -81,7 +81,8 @@ def get_note_timeline(track: mido.MidiTrack) -> np.ndarray:
     """
     Returns a list of tuples, each of which represents a note in the source MIDI track. The tuples contain:
     1. The start time of the note (in ticks)
-    2. The note value being played
+    2. The end time of the note (in ticks)
+    3. The note value being played
 
     Args:
         track: A track from a MIDI file
@@ -90,11 +91,21 @@ def get_note_timeline(track: mido.MidiTrack) -> np.ndarray:
 
     """
     notes = []
+    note_offs = []
     curr_time = 0
     for i in range(len(track)):
-        if track[i].type == "note_on" and track[i].velocity != 0:  # ignore note off / running status note off messages
-            notes.append((curr_time + track[i].time, track[i].note))
+        if track[i].type == "note_on" and track[i].velocity != 0:
+            # start of new note being played
+            notes.append(np.array((curr_time + track[i].time, -1, track[i].note)))
+            # notes.append((curr_time + track[i].time, track[i].note))
+        elif track[i].type == "note_off" or (track[i].type == "note_on" and track[i].velocity == 0):
+            # note off (inc note on "running status")
+            # naive: assume the previous note_on message was the one this note_off corresponds to
+            # (not necessarily the case in polyphonic music)
+            notes[-1][1] = curr_time + track[i].time # set the last note's end time
+
         curr_time += track[i].time
 
     return np.array(notes)
+
 

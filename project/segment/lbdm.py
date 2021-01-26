@@ -29,6 +29,11 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
     and rests (diff between offset to onset) to find the places where these differ significantly from the intervals
     before it. The boundaries are weighted : by default, the inter-onset intervals are weighted to be twice as important
     as the other intervals. These boundaries are normalised to between 0 and 1 inclusive.
+
+    Notes:
+        This method currently only takes into account note_on and note_off messages within the MidiTrack. Other messages
+        that may have an effect on timing and pitch (e.g. sustain pedal, pitchwheel, tempo) are not currently taken into
+        account.
     Args:
         track: The MIDI track to produce boundaries for
         pitch_weight: The relative importance of pitches in determining where boundaries are placed
@@ -38,10 +43,9 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
     Returns: A boundary strength profile describing the places in which the music changes
 
     """
-    # if len(track) < 2:
-    #     return np.empty(1, ), (np.empty(1, ), np.empty((1,)), np.empty(1, ))
 
     # get only note_on / note_off events
+
     notes = get_note_timeline(track)
 
     pitches = []
@@ -50,9 +54,12 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
 
     # create parametric profile
     for i in range(1, len(notes)):
-        pitches.append(abs(notes[i][1] - notes[i - 1][1]))
+        pitches.append(abs(notes[i][2] - notes[i - 1][2]))
         interonsets.append(notes[i][0] - notes[i - 1][0])
-        rests.append(0)  # rest is temp set to 0
+        rests.append(notes[i][0] - notes[i - 1][1])  # new onset - old offset
+        # here we assume that when the note off event is sent, the note will immediately stop playing
+        # what this actually sounds like (e.g. the note decreases in volume for a predetermined time)
+        # is up to the configuration of the MIDI device playing the MIDI file
 
     sequence_pitches = []
     sequence_iois = []

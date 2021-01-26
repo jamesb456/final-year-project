@@ -10,7 +10,7 @@ import project.util.midtools as mdt
 from typing import List
 
 
-md = mido.MidiFile("mid/ashover13.mid")
+md = mido.MidiFile("mid/busy_schedule_sax.mid")
 print(f"For midi {md.filename}: Ticks per beat: {md.ticks_per_beat}")
 tracks: List[mido.MidiTrack] = md.tracks
 
