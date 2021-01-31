@@ -80,14 +80,17 @@ def number_to_scientific_pitch(num: int) -> str:
 def get_note_timeline(track: mido.MidiTrack) -> np.ndarray:
     """
     Returns a list of tuples, each of which represents a note in the source MIDI track. The tuples contain:
+
     1. The start time of the note (in ticks)
     2. The end time of the note (in ticks)
     3. The note value being played
+    4. The index of the note off message within ``track``
 
     Args:
         track: A track from a MIDI file
 
-    Returns: A list of tuples describing the notes in the MIDI track and when they are played.
+    Returns:
+        A list of tuples describing the notes in the MIDI track and when they are played.
 
     """
     notes = []
@@ -96,14 +99,14 @@ def get_note_timeline(track: mido.MidiTrack) -> np.ndarray:
     for i in range(len(track)):
         if track[i].type == "note_on" and track[i].velocity != 0:
             # start of new note being played
-            notes.append(np.array((curr_time + track[i].time, -1, track[i].note)))
+            notes.append(np.array((curr_time + track[i].time, -1, track[i].note, -1)))
             # notes.append((curr_time + track[i].time, track[i].note))
         elif track[i].type == "note_off" or (track[i].type == "note_on" and track[i].velocity == 0):
             # note off (inc note on "running status")
             # naive: assume the previous note_on message was the one this note_off corresponds to
             # (not necessarily the case in polyphonic music)
             notes[-1][1] = curr_time + track[i].time # set the last note's end time
-
+            notes[-1][3] = i
         curr_time += track[i].time
 
     return np.array(notes)
