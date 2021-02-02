@@ -13,3 +13,4 @@ class Segmenter(ABC):
     @abstractmethod
     def create_segments(self, mid: MidiFile) -> List[Segment]:
         pass
+

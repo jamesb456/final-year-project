@@ -38,22 +38,37 @@ class LbdmSegmenter(Segmenter):
                 segmentation_indices.append(indices[profile_index])
 
         start_index = -1
-        tracks = []
+
+        segments = []
 
         for seg_index in segmentation_indices:
-            seg_track = MidiTrack()
-            seg_track.extend(track[start_index+1:seg_index+1])
+            segments.append(Segment(track, start_index+1, seg_index+1))
             start_index = seg_index
 
-            tracks.append(seg_track)
+        # append remaining notes of the MIDI file to the last segment
 
-        end_track = MidiTrack()
-        end_track.extend(track[start_index + 1:])
-        tracks.append(end_track)
+        segments.append(Segment(track, start_index+1, len(track)))
 
-        i = 0
-        for tr in tracks:
-            segment_mid = MidiFile(ticks_per_beat=mid.ticks_per_beat)
-            segment_mid.tracks.append(tr)
-            segment_mid.save(f"../../mid/generated/segment_{i}.mid")
-            i += 1
+        # code for saving segments to file
+        # put the end of the track into the last segment
+        # tracks = []
+        #    for seg_index in segmentation_indices:
+        #             seg_track = MidiTrack()
+        #             seg_track.extend(track[start_index+1:seg_index+1])
+        #             start_index = seg_index
+        #
+        #             tracks.append(seg_track)
+        # end_track = MidiTrack()
+        # end_track.extend(track[start_index + 1:])
+        # tracks.append(end_track)
+        #
+        # i = 0
+        # # create midi files out of segments. Note these segments may not represent
+        # # true segments of the track as listened as important messages such as
+        # # instrument, volume and tempo messages may only be at the start of the MIDI track
+        # for tr in tracks:
+        #     segment_mid = MidiFile(ticks_per_beat=mid.ticks_per_beat)
+        #     segment_mid.tracks.append(tr)
+        #     segment_mid.save(f"../../mid/generated/segment_{i}.mid")
+        #     i += 1
+        return segments
