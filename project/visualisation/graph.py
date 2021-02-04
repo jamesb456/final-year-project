@@ -86,9 +86,9 @@ def lbdm_graph(track: mido.MidiTrack):
     plt.style.use("fivethirtyeight")
     plt.xlabel("Note interval index")
     plt.ylabel("Boundary strength")
-    plt.title("LBDM test (pitch weight = 0.33, inter onset weight = 0.67)")
+    plt.title("LBDM test")
     barwidth = 0.3
-    plt.plot(np.array(range(len(profile))), profile, label="LBDM overall boundary strength", linewidth=2, color="gray")
+    plt.plot(np.array(range(len(profile))), profile, label="LBDM overall boundary strength", linewidth=2, color="purple")
     plt.bar(np.array(range(len(profile))) - barwidth, pitch, label="Pitch boundary strength", width=barwidth)
     plt.bar(np.array(range(len(profile))), ioi, label="Inter onset boundary strength", width=barwidth)
     plt.bar(np.array(range(len(profile))) + barwidth, rest, label="Rest boundary strength", width=barwidth)

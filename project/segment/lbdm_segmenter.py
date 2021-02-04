@@ -39,24 +39,14 @@ class LbdmSegmenter(Segmenter):
         # profile contains values [0,1], though not necessarily always going up to 1.
         # some determination of the correct threshold given the lbdm profile. for simplicity here
         # we use a fixed threshold
-
-        segmentation_indices = []
+        segments = []
+        last_segmentation_index = 0
         for profile_index, boundary_strength in np.ndenumerate(profile):
             if boundary_strength > self.threshold:
-                segmentation_indices.append(timeline[:, 3][profile_index])
+                segments.append(Segment(track, timeline[last_segmentation_index:profile_index[0]+1]))
+                last_segmentation_index = profile_index[0]
 
-        start_index = -1
-
-        segments = []
-
-        for seg_index in segmentation_indices:
-            segments.append(Segment(track, start_index + 1, seg_index + 1))
-            start_index = seg_index
-
-        # append remaining notes of the MIDI file to the last segment
-
-        segments.append(Segment(track, start_index + 1, len(track)))
-
+        segments.append(Segment(track, timeline[last_segmentation_index:]))
         # code for saving segments to file
         # put the end of the track into the last segment
         # tracks = []
