@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import mido
 import numpy as np
-import project.util.midtools as mi
-from project.util.midtools import number_to_scientific_pitch
+
+from project.util.midtools import number_to_scientific_pitch, get_type_tally, get_note_tally, get_note_timeline
 from project.segment.lbdm import lbdm
 
 
@@ -26,8 +26,8 @@ def view_midi_information():
         1 = multi track
         2 = asynchronous)""")
 
-        type_dict = mi.get_type_tally(mid)
-        note_dict = mi.get_note_tally(mid)
+        type_dict = get_type_tally(mid)
+        note_dict = get_note_tally(mid)
         print(f"\tType dictionary: {type_dict}")
 
         axes[i].set_title(f"Note distribution ({mid.filename})")
@@ -80,8 +80,9 @@ def pitch_time_graph(track: mido.MidiTrack, ticks_per_beat: int):
 
 def lbdm_graph(track: mido.MidiTrack):
     # temp, ignore rests for the moment
-    (profile, _ ,(pitch, ioi, rest)) = lbdm(track)
-    notes = mi.get_note_timeline(track)
+    notes = get_note_timeline(track)
+    (profile, (pitch, ioi, rest)) = lbdm(notes)
+
     plt.style.use("fivethirtyeight")
     plt.xlabel("Note interval index")
     plt.ylabel("Boundary strength")

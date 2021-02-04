@@ -1,9 +1,5 @@
-import mido
 from typing import Callable, Tuple
 import numpy as np
-
-
-from project.util.midtools import get_note_timeline
 
 
 def default_change(x1: int, x2: int) -> float:
@@ -20,9 +16,9 @@ def normalize(arr: np.array) -> np.array:
         return arr / np.max(arr)
 
 
-def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
+def lbdm(notes: np.ndarray, pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
          , degree_of_change: Callable[[int, int], float] = default_change) \
-        -> Tuple[np.ndarray, np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+        -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
     Creates a list of boundaries for the target MIDI track using the Local Boundary Detection Model.
     It looks at the intervals between notes in terms of pitch, inter-onsets (between the starts of notes pressing down)
@@ -35,32 +31,19 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
         that may have an effect on timing and pitch (e.g. sustain pedal, pitchwheel, tempo) are not currently taken into
         account.
     Args:
-        track: The MIDI track to produce boundaries for
+        notes: The MIDI track to produce boundaries for
         pitch_weight: The relative importance of pitches in determining where boundaries are placed
         ioi_weight: The relative importance of inter-onset intervals in determining where boundaries are placed
         rest_weight: The relative importance of rests in determining where boundaries are placed
         degree_of_change: A function to calculate the relative difference between two intervals
     Returns:
-        A boundary strength profile describing the places in which the music changes
+        A boundary strength profile describing the places in which the music changes. In addition, the values for each
+        profile (pitch, ioi, rest) are also returned.
 
     """
-
-    # get only note_on / note_off events
-
-    notes = get_note_timeline(track)
-
-    pitches = []
-    interonsets = []
-    rests = []
-
-    # create parametric profile
-    for i in range(1, len(notes)):
-        pitches.append(abs(notes[i][2] - notes[i - 1][2]))
-        interonsets.append(notes[i][0] - notes[i - 1][0])
-        rests.append(notes[i][0] - notes[i - 1][1])  # new onset - old offset
-        # here we assume that when the note off event is sent, the note will immediately stop playing
-        # what this actually sounds like (e.g. the note decreases in volume for a predetermined time)
-        # is up to the configuration of the MIDI device playing the MIDI file
+    pitches = abs(notes[1:, 2] - notes[:len(notes) - 1, 2])
+    interonsets = notes[1:, 0] - notes[:len(notes) - 1, 0]
+    rests = notes[1:, 0] - notes[:len(notes) - 1, 2]
 
     sequence_pitches = []
     sequence_iois = []
@@ -103,6 +86,6 @@ def lbdm(track: mido.MidiTrack, pitch_weight: float = 0.25, ioi_weight: float = 
     sequence_rests = normalize(np.array(sequence_rests))
 
     sequence_profile = (sequence_pitches * pitch_weight) + (sequence_iois * ioi_weight) + (sequence_rests * rest_weight)
-    return sequence_profile, notes[:, 3], (sequence_pitches, sequence_iois, sequence_rests)
+    return sequence_profile, (sequence_pitches, sequence_iois, sequence_rests)
 
 
