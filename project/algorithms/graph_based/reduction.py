@@ -3,7 +3,7 @@ import numpy as np
 from project.segment.segment import Segment
 
 
-def reduce(segment: Segment, window_size: int) -> Segment:
+def reduce_segment(segment: Segment, window_size: int = -1) -> Segment:
     reduced_notes = np.array(segment.notes)  # create copy of note timeline
-    # do the reduction
+
     return Segment(segment.track, reduced_notes)

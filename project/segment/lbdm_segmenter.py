@@ -20,17 +20,17 @@ class LbdmSegmenter(Segmenter):
         self.ioi_weight = ioi_weight
         self.rest_weight = rest_weight
 
-    def create_segments(self, mid: MidiFile) -> List[Segment]:
+    def create_segments(self, mid: MidiFile, track_index: int) -> List[Segment]:
 
         # determine which track to use (temp this)
-        track = mid.tracks[0]
+        track: MidiTrack = mid.tracks[track_index]
 
         # timeline is a numpy array with 4 columns representing the notes in the MIDI file as follows:
         # [0] the start time in ticks of the note (the time of the "note on" event)
         # [1] the end time in ticks of the note (the time of the "note off" event)
         # [2] the pitch of the note (as a MIDI note number)
         # [3] the index in the track of the note off event of the note
-        # (i.e. track[timeline[i][3] is the corresponding event)
+        # (i.e. track[timeline[i][3]] is the corresponding  note off event)
         timeline = get_note_timeline(track)
 
         # get the lbdm "sequence profile" describing where segmentation should take place
@@ -43,10 +43,11 @@ class LbdmSegmenter(Segmenter):
         last_segmentation_index = 0
         for profile_index, boundary_strength in np.ndenumerate(profile):
             if boundary_strength > self.threshold:
-                segments.append(Segment(track, timeline[last_segmentation_index:profile_index[0]+1]))
+                segments.append(Segment(mid, timeline[last_segmentation_index:profile_index[0]+1]))
                 last_segmentation_index = profile_index[0]
 
-        segments.append(Segment(track, timeline[last_segmentation_index:]))
+        # get last few notes
+        segments.append(Segment(mid, timeline[last_segmentation_index:]))
         # code for saving segments to file
         # put the end of the track into the last segment
         # tracks = []

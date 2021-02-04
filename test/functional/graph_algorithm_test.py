@@ -2,6 +2,7 @@ import unittest
 
 from mido import MidiTrack, MidiFile
 
+from project.algorithms.graph_based.reduction import reduce_segment
 from project.segment.lbdm_segmenter import LbdmSegmenter
 
 # test for structure:
@@ -20,7 +21,10 @@ class GraphAlgorithmTest(unittest.TestCase):
         self.segmenter = LbdmSegmenter()
 
     def test_graph_algorithm_procedure(self):
-        segments = self.segmenter.create_segments(self.mid_file)
+        segments = self.segmenter.create_segments(self.mid_file, 0)
+
+        reduced_segments = map(lambda seg: reduce_segment(seg), segments)
+
         
 
 

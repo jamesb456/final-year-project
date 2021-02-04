@@ -41,6 +41,8 @@ def lbdm(notes: np.ndarray, pitch_weight: float = 0.25, ioi_weight: float = 0.5,
         profile (pitch, ioi, rest) are also returned.
 
     """
+    if len(notes) < 2:
+        return np.array([]), (np.array([]), np.array([]), np.array([]))
     pitches = abs(notes[1:, 2] - notes[:len(notes) - 1, 2])
     interonsets = notes[1:, 0] - notes[:len(notes) - 1, 0]
     rests = notes[1:, 0] - notes[:len(notes) - 1, 2]
