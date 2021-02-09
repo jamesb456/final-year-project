@@ -22,7 +22,7 @@ class GraphAlgorithmTest(unittest.TestCase):
 
     def test_graph_algorithm_procedure(self):
         segments = self.segmenter.create_segments(self.mid_file, 0)
-
+        new_segment = reduce_segment(segments[0])
         reduced_segments = map(lambda seg: reduce_segment(seg), segments)
 
         

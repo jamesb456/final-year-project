@@ -1,5 +1,7 @@
-from typing import Callable, Tuple
+from typing import Callable, Tuple, List
 import numpy as np
+
+from project.segment.note import Note
 
 
 def default_change(x1: int, x2: int) -> float:
@@ -16,7 +18,7 @@ def normalize(arr: np.array) -> np.array:
         return arr / np.max(arr)
 
 
-def lbdm(notes: np.ndarray, pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
+def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
          , degree_of_change: Callable[[int, int], float] = default_change) \
         -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
@@ -43,9 +45,12 @@ def lbdm(notes: np.ndarray, pitch_weight: float = 0.25, ioi_weight: float = 0.5,
     """
     if len(notes) < 2:
         return np.array([]), (np.array([]), np.array([]), np.array([]))
-    pitches = abs(notes[1:, 2] - notes[:len(notes) - 1, 2])
-    interonsets = notes[1:, 0] - notes[:len(notes) - 1, 0]
-    rests = notes[1:, 0] - notes[:len(notes) - 1, 2]
+
+    # get consecutive pairs of notes i.e [(note0,note1), (note1,note2)] etc. for comparison
+    note_pairs = list(zip(notes[1:], notes))
+    pitches = [abs(note_pair[1].pitch - note_pair[0].pitch) for note_pair in note_pairs]
+    interonsets = [note_pair[1].start_time - note_pair[0].start_time for note_pair in note_pairs]
+    rests = [note_pair[1].start_time - note_pair[0].end_time for note_pair in note_pairs]
 
     sequence_pitches = []
     sequence_iois = []
