@@ -17,14 +17,18 @@ from project.segment.lbdm_segmenter import LbdmSegmenter
 
 class GraphAlgorithmTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.mid_file = MidiFile("../../mid/busy_schedule_sax.mid")
+        self.mid_file = MidiFile("../../mid/ashover13.mid")
         self.segmenter = LbdmSegmenter()
 
     def test_graph_algorithm_procedure(self):
         segments = self.segmenter.create_segments(self.mid_file, 0)
-        new_segment = reduce_segment(segments[0])
-        reduced_segments = map(lambda seg: reduce_segment(seg), segments)
+        reduced_segments = list(map(lambda seg: reduce_segment(seg), segments))
 
+        for (index, segment) in enumerate(segments):
+            segment.save_segment(f"../../mid/generated/segment_{index}.mid")
+
+        for (index, reduced_segment) in enumerate(reduced_segments):
+            reduced_segment.save_segment(f"../../mid/generated/reduced_segment_{index}.mid")
         
 
 

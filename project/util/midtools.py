@@ -101,7 +101,7 @@ def get_note_timeline(track: mido.MidiTrack) -> List[Note]:
     for i in range(len(track)):
         if track[i].type == "note_on" and track[i].velocity != 0:
             # start of new note being played
-            notes.append(Note(curr_time + track[i].time, -1, track[i].note, -1, i, -1))
+            notes.append(Note(curr_time + track[i].time, -1, track[i].note, None, i, None))
             # notes.append((curr_time + track[i].time, track[i].note))
         elif track[i].type == "note_off" or (track[i].type == "note_on" and track[i].velocity == 0):
             # note off (inc note on "running status")
