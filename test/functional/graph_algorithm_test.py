@@ -23,12 +23,20 @@ class GraphAlgorithmTest(unittest.TestCase):
     def test_graph_algorithm_procedure(self):
         segments = self.segmenter.create_segments(self.mid_file, 0)
         reduced_segments = list(map(lambda seg: reduce_segment(seg), segments))
-
+        double_reduced_segments = list(map(lambda seg: reduce_segment(seg), reduced_segments))
+        triple_reduced_segments = list(map(lambda seg: reduce_segment(seg), double_reduced_segments))
         for (index, segment) in enumerate(segments):
             segment.save_segment(f"../../mid/generated/segment_{index}.mid")
 
         for (index, reduced_segment) in enumerate(reduced_segments):
             reduced_segment.save_segment(f"../../mid/generated/reduced_segment_{index}.mid")
+
+        for (index, reduced_segment) in enumerate(double_reduced_segments):
+            reduced_segment.save_segment(f"../../mid/generated/doubled_reduced_segment_{index}.mid")
+
+        for (index, reduced_segment) in enumerate(triple_reduced_segments):
+            reduced_segment.save_segment(f"../../mid/generated/triple_reduced_segment_{index}.mid")
+
         
 
 

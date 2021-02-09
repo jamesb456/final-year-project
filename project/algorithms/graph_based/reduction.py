@@ -22,12 +22,13 @@ def reduce_segment(segment: Segment, window_size: int = -1) -> Segment:
         window_notes = segment.get_notes_in_time_range(start_position, window_size)
         if len(window_notes) < 2:  # if there's 0 or 1 notes in the window just add the notes to the new set of notes
             reduced_notes.extend(window_notes)
+            start_position += window_size
         else:  # choose the most relevant note
             # for TESTING use the first note always
             new_note = Note(window_notes[0].start_time, window_notes[-1].end_time,
                             window_notes[0].pitch, window_notes[0].chord)
             # we don't care about start_message_index, end_message_index because it's no longer from a track
-
-        start_position += window_size
+            reduced_notes.append(new_note)
+            start_position += new_note.duration
 
     return Segment(segment.file, segment.melody_track_ind, reduced_notes)
