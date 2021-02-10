@@ -22,10 +22,13 @@ class LbdmSegmenter(Segmenter):
 
     def create_segments(self, mid: MidiFile, track_index: int) -> List[Segment]:
 
-        # determine which track to use (temp this)
+        # determine which track to segment
         track: MidiTrack = mid.tracks[track_index]
 
+        # get list of notes within the track
         timeline = get_note_timeline(track)
+
+        # annotate with chords
 
         # get the lbdm "sequence profile" describing where segmentation should take place
         profile, _ = lbdm.lbdm(timeline, pitch_weight=self.pitch_weight, ioi_weight=self.ioi_weight,
