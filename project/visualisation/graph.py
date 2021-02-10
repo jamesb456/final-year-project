@@ -78,10 +78,10 @@ def pitch_time_graph(track: mido.MidiTrack, ticks_per_beat: int):
     plt.show()
 
 
-def lbdm_graph(track: mido.MidiTrack):
+def lbdm_graph(track: mido.MidiTrack, ticks_per_beat: int = 1024):
     # temp, ignore rests for the moment
     notes = get_note_timeline(track)
-    (profile, (pitch, ioi, rest)) = lbdm(notes)
+    (profile, (pitch, ioi, rest)) = lbdm(notes, max_time_difference=ticks_per_beat * 4)
 
     plt.style.use("fivethirtyeight")
     plt.xlabel("Note interval index")

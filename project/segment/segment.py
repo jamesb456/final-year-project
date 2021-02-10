@@ -55,15 +55,16 @@ class Segment:
         melody_track: MidiTrack = self.file.tracks[self.melody_track_ind]
         # add all the meta messages (e.g. time signature, instrument)
         new_track = new_file.add_track(melody_track.name)
-        new_track.extend([message for message in melody_track if message.is_meta and message.type != "end_of_track"])
+        new_track.extend([message for message in melody_track if (message.is_meta and message.type != "end_of_track")
+                          or message.type == "control_change" or message.type == "program_change"])
         # add the list of notes within the segment as Midi messages
-
         for (index, note) in enumerate(self.notes):
             # TODO: add velocity into note definition?
-            new_track.append(Message(type="note_on", note=note.pitch, velocity=127
+            new_track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel
                                      , time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
             new_track.append(
-                Message(type="note_on", note=note.pitch, velocity=0, time=note.duration))  # running status note off
+                Message(type="note_on", note=note.pitch, velocity=0, channel=6,
+                        time=note.duration))  # running status note off
 
         # TODO: end of track at same offset as in the source track
         new_track.append(MetaMessage(type="end_of_track", time=0))

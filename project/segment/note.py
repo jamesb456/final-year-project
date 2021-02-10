@@ -10,11 +10,13 @@ class Note:
     playing the music)
 
     """
-    def __init__(self, start: int, end: int, pitch: int, chord: Optional[int] = None,
+    def __init__(self, start: int, end: int, pitch: int, channel: int = 0, chord: Optional[int] = None,
                  start_message_index: Optional[int] = None, end_message_index: Optional[int] = None):
+
         self.start_time = start
         self.end_time = end
         self.pitch = pitch
+        self.channel = channel
         self.chord = chord
         self.start_message_index = start_message_index
         self.end_message_index = end_message_index

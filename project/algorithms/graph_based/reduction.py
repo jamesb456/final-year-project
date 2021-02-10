@@ -26,7 +26,7 @@ def reduce_segment(segment: Segment, window_size: int = -1) -> Segment:
         else:  # choose the most relevant note
             # for TESTING use the first note always
             new_note = Note(window_notes[0].start_time, window_notes[-1].end_time,
-                            window_notes[0].pitch, window_notes[0].chord)
+                            window_notes[0].pitch, window_notes[0].channel, window_notes[0].chord)
             # we don't care about start_message_index, end_message_index because it's no longer from a track
             reduced_notes.append(new_note)
             start_position += new_note.duration

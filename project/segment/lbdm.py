@@ -18,8 +18,9 @@ def normalize(arr: np.array) -> np.array:
         return arr / np.max(arr)
 
 
-def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25
-         , degree_of_change: Callable[[int, int], float] = default_change) \
+def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25,
+         max_pitch_difference: int = 12, max_time_difference: int = 4096,
+         degree_of_change: Callable[[int, int], float] = default_change) \
         -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
     Creates a list of boundaries for the target MIDI track using the Local Boundary Detection Model.
@@ -33,10 +34,13 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
         that may have an effect on timing and pitch (e.g. sustain pedal, pitchwheel, tempo) are not currently taken into
         account.
     Args:
+
         notes: The MIDI track to produce boundaries for
         pitch_weight: The relative importance of pitches in determining where boundaries are placed
         ioi_weight: The relative importance of inter-onset intervals in determining where boundaries are placed
         rest_weight: The relative importance of rests in determining where boundaries are placed
+        max_pitch_difference: The maximum value that a pitch interval can be. Higher value intervals will be truncated
+        max_time_difference: The maximum value that a interonset/rest interval can be. Higher value intervals will be truncated.
         degree_of_change: A function to calculate the relative difference between two intervals
     Returns:
         A boundary strength profile describing the places in which the music changes. In addition, the values for each
@@ -47,10 +51,12 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
         return np.array([]), (np.array([]), np.array([]), np.array([]))
 
     # get consecutive pairs of notes i.e [(note0,note1), (note1,note2)] etc. for comparison
-    note_pairs = list(zip(notes[1:], notes))
-    pitches = [abs(note_pair[1].pitch - note_pair[0].pitch) for note_pair in note_pairs]
-    interonsets = [note_pair[1].start_time - note_pair[0].start_time for note_pair in note_pairs]
-    rests = [note_pair[1].start_time - note_pair[0].end_time for note_pair in note_pairs]
+    note_pairs = list(zip(notes, notes[1:]))
+
+    # get interval values, truncate to max value if needed
+    pitches = [min(abs(note_pair[1].pitch - note_pair[0].pitch), max_pitch_difference) for note_pair in note_pairs]
+    interonsets = [min(note_pair[1].start_time - note_pair[0].start_time, max_time_difference) for note_pair in note_pairs]
+    rests = [min(note_pair[1].start_time - note_pair[0].end_time, max_time_difference) for note_pair in note_pairs]
 
     sequence_pitches = []
     sequence_iois = []
@@ -76,16 +82,16 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
             next_rest = rests[i + 1]
 
         sequence_pitches.append((pitches[i] *
-                                (degree_of_change(prev_pitch, pitches[i])
-                                + (degree_of_change(pitches[i], next_pitch)))) + 1)
+                                 (degree_of_change(prev_pitch, pitches[i])
+                                  + (degree_of_change(pitches[i], next_pitch)))) + 1)
 
         sequence_iois.append((interonsets[i] *
-                             (degree_of_change(prev_ioi, interonsets[i])
-                             + (degree_of_change(interonsets[i], next_ioi)))) + 1)
+                              (degree_of_change(prev_ioi, interonsets[i])
+                               + (degree_of_change(interonsets[i], next_ioi)))) + 1)
 
         sequence_rests.append((rests[i] *
-                              (degree_of_change(prev_rest, rests[i])
-                              + (degree_of_change(rests[i], next_rest)))) + 1)
+                               (degree_of_change(prev_rest, rests[i])
+                                + (degree_of_change(rests[i], next_rest)))) + 1)
 
     # normalise to range [0,1]
     sequence_pitches = normalize(np.array(sequence_pitches))
@@ -94,5 +100,3 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
 
     sequence_profile = (sequence_pitches * pitch_weight) + (sequence_iois * ioi_weight) + (sequence_rests * rest_weight)
     return sequence_profile, (sequence_pitches, sequence_iois, sequence_rests)
-
-

@@ -17,7 +17,7 @@ from project.segment.lbdm_segmenter import LbdmSegmenter
 
 class GraphAlgorithmTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.mid_file = MidiFile("../../mid/ashover13.mid")
+        self.mid_file = MidiFile("../../mid/busy_schedule_sax.mid")
         self.segmenter = LbdmSegmenter()
 
     def test_graph_algorithm_procedure(self):

@@ -20,5 +20,5 @@ tracks: List[mido.MidiTrack] = md.tracks
 # Time until msg played (beat): {msg.time / md.ticks_per_beat} Velocity {msg.velocity}""")
 
 
-gr.lbdm_graph(tracks[0])
+gr.lbdm_graph(tracks[0], md.ticks_per_beat)
 
