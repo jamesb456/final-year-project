@@ -34,9 +34,6 @@ class Segment:
     def get_notes_in_time_range(self, range_start: int, range_length: int) -> List[Note]:
         """
         Gets a list of notes who's onset times fall within the range [range_start,range_start + range_length)
-        This range is relative to the start of the segment i.e range_start = 0 indicates the time range starts at the
-        beginning of this segment.
-
         Args:
             range_start: The start of the range
             range_length: The end of the range
@@ -44,7 +41,6 @@ class Segment:
         Returns:
             A list of notes who's onset time's occur within the range [range_start,range_start + range_length)
         """
-        range_start += self.start_time
         return [note for note in self.notes if (range_start <= note.start_time < range_start + range_length)]
 
     def save_segment(self, filepath):
@@ -55,16 +51,16 @@ class Segment:
         melody_track: MidiTrack = self.file.tracks[self.melody_track_ind]
         # add all the meta messages (e.g. time signature, instrument)
         new_track = new_file.add_track(melody_track.name)
-        new_track.extend([message for message in melody_track if (message.is_meta and message.type != "end_of_track")
+        new_track.extend([message for message in melody_track
+                          if (message.is_meta and message.type != "end_of_track")
                           or message.type == "control_change" or message.type == "program_change"])
         # add the list of notes within the segment as Midi messages
         for (index, note) in enumerate(self.notes):
             # TODO: add velocity into note definition?
-            new_track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel
-                                     , time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
-            new_track.append(
-                Message(type="note_on", note=note.pitch, velocity=0, channel=6,
-                        time=note.duration))  # running status note off
+            new_track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
+                                     time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
+            new_track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
+                                     time=note.duration))  # running status note off
 
         # TODO: end of track at same offset as in the source track
         new_track.append(MetaMessage(type="end_of_track", time=0))

@@ -19,8 +19,6 @@ def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
         the particular MIDI note.
     """
 
-
-
     note_dict = {}
     for i in range(128):
         note_dict[i] = 0
@@ -54,29 +52,6 @@ def get_type_tally(mid: mido.MidiFile) -> Dict[str, int]:
             else:
                 type_dict[msg.type] = 1
     return type_dict
-
-
-def number_to_scientific_pitch(num: int) -> str:
-    """Converts a MIDI note number (in the range of 0 to 127) to a pitch in
-    'scientific pitch notation'. This is comprised of the equivalent note from
-    the 12-note scale (C, D# etc.) and the octave. Note 60 (C4) represents Middle C.
-
-    If the number is outside of the range of MIDI note numbers (0 to 127), the number itself is
-    returned (as a string)
-
-    Args:
-        num (int): The MIDI note number to be converted
-
-    Returns:
-        str: The note in scientific pitch notation if num is between 0 and 127 (inclusive both ends), or a
-        string representation of num if not.
-    """
-
-    scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-    if num < 0 or num > 127:
-        return str(num)
-    else:
-        return scale[num % 12] + str(math.floor((num - 12) / 12.0))
 
 
 def get_note_timeline(track: mido.MidiTrack) -> List[Note]:

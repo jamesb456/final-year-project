@@ -1,4 +1,6 @@
+from math import floor
 from typing import Optional
+
 
 
 class Note:
@@ -25,3 +27,25 @@ class Note:
     def duration(self) -> int:
         return self.end_time - self.start_time
 
+    def str(self):
+        return self.__str__()
+
+    def repr(self):
+        return self.__repr__()
+
+    def __str__(self):
+        scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        scientific_note = ""
+        if self.pitch < 0 or self.pitch > 127:
+            scientific_note = str(self.pitch)
+        else:
+            scientific_note = scale[self.pitch % 12] + str(floor((self.pitch - 12) / 12.0))
+
+        base = f"Note {scientific_note} start={self.start_time} length={self.duration} " \
+               f"channel={self.channel}"
+        if self.chord is not None:
+            base += f"chord={self.chord}"
+        return base
+
+    def __repr__(self):
+        return self.__str__()

@@ -4,7 +4,7 @@ import matplotlib.ticker as ticker
 import mido
 import numpy as np
 
-from project.util.midtools import number_to_scientific_pitch, get_type_tally, get_note_tally, get_note_timeline
+from project.util.midtools import  get_type_tally, get_note_tally, get_note_timeline
 from project.segment.lbdm import lbdm
 
 
@@ -35,7 +35,6 @@ def view_midi_information():
         axes[i].bar(note_dict.keys(), note_dict.values())
         axes[i].set_xlim(0, 127)
         axes[i].set_xticks(range(0, 128))
-        axes[i].set_xticklabels(map(number_to_scientific_pitch, range(0, 128)))
 
         axes[i].xaxis.set_major_locator(ticker.MultipleLocator(12.0))
 
