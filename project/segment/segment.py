@@ -29,6 +29,9 @@ class Segment:
         else:
             return None
 
+    def get_number_of_notes(self):
+        return len(self.notes)
+
     def find_shortest_note_length(self) -> Optional[int]:
         return min([note.duration for note in self.notes], default=None)
 
@@ -67,5 +70,3 @@ class Segment:
         new_file.save(filename=filepath)
 
 
-    def __len__(self):
-        return len(self.notes)

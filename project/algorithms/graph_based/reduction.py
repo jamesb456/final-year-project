@@ -35,6 +35,9 @@ def get_beat_strength(beat_index: int, time_signature: Tuple[int, int]):
 
 
 def reduce_segment(segment: Segment, window_size: int = -1) -> Segment:
+    if segment.get_number_of_notes() < 2:
+        return Segment(segment.file, segment.melody_track_ind, list(segment.notes))
+
     reduced_notes = []
 
     # work out the window size
@@ -78,7 +81,7 @@ def reduce_segment(segment: Segment, window_size: int = -1) -> Segment:
             # work out the time signature (assume 4/4 that started at t=0 if not specified)
             time_sig_event = (0, (4, 4))
             if len(time_signature_events) > 1:
-                time_sig = time_signature_events[-1]  # choose the most recent time signature
+                time_sig_event = time_signature_events[-1]  # choose the most recent time signature
 
             time_signature_deltat = time_sig_event[0]
             time_signature = time_sig_event[1]
