@@ -88,3 +88,12 @@ def get_note_timeline(track: mido.MidiTrack) -> List[Note]:
     return notes
 
 
+def get_track_time_signatures(track: mido.MidiTrack) -> List[Tuple[int, Tuple[int, int]]]:
+    time_signatures = []
+    start_time = 0
+    for message in track:
+        if message.type == "time_signature":
+            time_signatures.append((start_time + message.time, (message.numerator, message.denominator)))
+        start_time += message.time
+
+    return time_signatures

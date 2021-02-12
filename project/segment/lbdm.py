@@ -64,13 +64,13 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
 
     # determine the change between intervals
     for i in range(len(pitches)):
-        prev_pitch = 0
-        prev_ioi = 0
-        prev_rest = 0
+        prev_pitch = pitches[i]
+        prev_ioi = pitches[i]
+        prev_rest = pitches[i]
 
-        next_pitch = 0
-        next_ioi = 0
-        next_rest = 0
+        next_pitch = pitches[i]
+        next_ioi = pitches[i]
+        next_rest = pitches[i]
 
         if i != 0:
             prev_pitch = pitches[i - 1]

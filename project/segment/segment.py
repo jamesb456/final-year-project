@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from mido import MidiFile, MidiTrack, Message, MetaMessage
 
@@ -11,8 +11,9 @@ class Segment:
         self.notes = notes
         self.melody_track_ind = melody_track_ind
 
-    def __len__(self):
-        return len(self.notes)
+    @property
+    def __melody_track(self) -> MidiTrack:
+        return self.file.tracks[self.melody_track_ind]
 
     @property
     def start_time(self) -> Optional[int]:
@@ -48,10 +49,9 @@ class Segment:
         new_file = MidiFile(type=self.file.type, ticks_per_beat=self.file.ticks_per_beat, charset=self.file.charset,
                             debug=self.file.debug, clip=self.file.clip)
 
-        melody_track: MidiTrack = self.file.tracks[self.melody_track_ind]
         # add all the meta messages (e.g. time signature, instrument)
-        new_track = new_file.add_track(melody_track.name)
-        new_track.extend([message for message in melody_track
+        new_track = new_file.add_track(self.__melody_track.name)
+        new_track.extend([message for message in self.__melody_track
                           if (message.is_meta and message.type != "end_of_track")
                           or message.type == "control_change" or message.type == "program_change"])
         # add the list of notes within the segment as Midi messages
@@ -65,3 +65,7 @@ class Segment:
         # TODO: end of track at same offset as in the source track
         new_track.append(MetaMessage(type="end_of_track", time=0))
         new_file.save(filename=filepath)
+
+
+    def __len__(self):
+        return len(self.notes)

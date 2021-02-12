@@ -1,6 +1,5 @@
 from math import floor
-from typing import Optional
-
+from typing import Optional, Tuple
 
 
 class Note:

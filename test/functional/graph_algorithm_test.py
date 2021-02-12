@@ -4,7 +4,8 @@ from mido import MidiTrack, MidiFile
 
 from project.algorithms.graph_based.reduction import reduce_segment
 from project.segment.lbdm_segmenter import LbdmSegmenter
-from project.visualisation.graph import pitch_time_graph
+from project.visualisation.graph import pitch_time_graph, lbdm_graph
+from project.util.midtools import get_track_time_signatures
 # test for structure:
 
 # general procedure
@@ -17,10 +18,11 @@ from project.visualisation.graph import pitch_time_graph
 
 class GraphAlgorithmTest(unittest.TestCase):
     def setUp(self) -> None:
-        self.mid_file = MidiFile("../../mid/Twinkle_Twinkle_little_star.mid")
-        self.segmenter = LbdmSegmenter()
+        self.mid_file = MidiFile("../../mid/ashover13.mid")
+        self.segmenter = LbdmSegmenter(threshold=0.5)
 
     def test_graph_algorithm_procedure(self):
+        sigs = get_track_time_signatures(self.mid_file.tracks[0])
 
         mid_name = pathlib.Path(self.mid_file.filename).stem
         print(f"Segmenting {mid_name}.mid")
