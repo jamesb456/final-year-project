@@ -54,19 +54,20 @@ class Segment:
 
         # add all the meta messages (e.g. time signature, instrument)
         new_track = new_file.add_track(self.__melody_track.name)
-        new_track.extend([message for message in self.__melody_track
-                          if (message.is_meta and message.type != "end_of_track")
-                          or message.type == "control_change" or message.type == "program_change"])
+        self.copy_notes_to_track(new_track)
+        new_file.save(filename=filepath)
+
+    def copy_notes_to_track(self, track: MidiTrack):
+        track.extend([message for message in self.__melody_track
+                      if (message.is_meta and message.type != "end_of_track")
+                      or message.type == "control_change" or message.type == "program_change"])
         # add the list of notes within the segment as Midi messages
         for (index, note) in enumerate(self.notes):
             # TODO: add velocity into note definition?
-            new_track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
-                                     time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
-            new_track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
-                                     time=note.duration))  # running status note off
+            track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
+                                 time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
+            track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
+                                 time=note.duration))  # running status note off
 
         # TODO: end of track at same offset as in the source track
-        new_track.append(MetaMessage(type="end_of_track", time=0))
-        new_file.save(filename=filepath)
-
-
+        track.append(MetaMessage(type="end_of_track", time=0))

@@ -11,7 +11,7 @@ from project.util.midtools import get_note_timeline
 
 class LbdmSegmenter(Segmenter):
 
-    def __init__(self, threshold: float = 0.4, pitch_weight: float = 0.25, ioi_weight: float = 0.5,
+    def __init__(self, threshold: float = 0.5, pitch_weight: float = 0.25, ioi_weight: float = 0.5,
                  rest_weight: float = 0.25):
 
         super().__init__()

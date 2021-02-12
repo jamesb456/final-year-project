@@ -13,11 +13,8 @@ if __name__ == '__main__':
     parser.add_argument("--melody_track", type=int, default=0,
                         help="The track the file should be segmented with respect to")
 
-
-
     args = parser.parse_args()
     mid_file = MidiFile(filename=args.midi_path)
-    lbdm_graph(mid_file.tracks[0],mid_file.ticks_per_beat)
     segmenter = LbdmSegmenter()
 
     mid_name = pathlib.Path(args.midi_path).stem
@@ -52,9 +49,27 @@ if __name__ == '__main__':
     print("Done reducing as all segments have at most 1 note.")
     print("Saving segments...")
 
-    for (iteration, segments) in segment_dict.items():
-        print(f"\tFor iteration {iteration}")
-        for (seg_ind, segment) in segments:
+    combined_dict = {}
+    for (iteration, r_segments) in segment_dict.items():
+        print(f"\tSaving iteration {iteration}")
+        for (seg_ind, segment) in r_segments:
             segment.save_segment(filepath=f"{mid_location}/segment_{seg_ind}_reduction_{iteration}.mid")
+            if seg_ind not in combined_dict.keys():
+                combined_dict[seg_ind] = []
+            combined_dict[seg_ind].append(segment)
+
+    print("Saving combined segments...")
+
+    for(segment_index, indexed_segments) in combined_dict.items():
+        old_file = indexed_segments[0].file
+        new_file = MidiFile(type=old_file.type, ticks_per_beat=old_file.ticks_per_beat, charset=old_file.charset,
+                            debug=old_file.debug, clip=old_file.clip)
+        original_track = new_file.add_track()
+        segments[segment_index].copy_notes_to_track(original_track)
+        for segment in indexed_segments:
+            track = new_file.add_track()
+            segment.copy_notes_to_track(track)
+
+        new_file.save(filename=f"{mid_location}/combined_segment_{segment_index}.mid")
 
     print("Segments saved.")
