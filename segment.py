@@ -7,19 +7,18 @@ from project.segment.lbdm_segmenter import LbdmSegmenter
 from project.util.midtools import get_track_time_signatures
 from project.visualisation.graph import lbdm_graph
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Segment and create a graph representation of a MIDI file.")
-    parser.add_argument("midi_path", type=str, help="Path to MIDI file to segment")
-    parser.add_argument("--melody_track", type=int, default=0,
-                        help="The track the file should be segmented with respect to")
 
-    args = parser.parse_args()
-    mid_file = MidiFile(filename=args.midi_path)
+# temp: could use classes eventually
+def segment_vector(filepath: str, melody_track: int, chord_track: int = 1):
+    pass
+
+
+def segment_graph(midi_path: str, melody_track: int, chord_track: int = 1):
     segmenter = LbdmSegmenter()
-
-    mid_name = pathlib.Path(args.midi_path).stem
-    print(f"Segmenting {mid_name}.mid")
-    segments = segmenter.create_segments(mid_file, args.melody_track)
+    mid_file = MidiFile(filename=midi_path)
+    mid_name = pathlib.Path(midi_path).stem
+    print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
+    segments = segmenter.create_segments(mid_file, melody_track)
     print("Done Segmentation")
 
     mid_location = f"mid/generated/{mid_name}"
@@ -60,7 +59,7 @@ if __name__ == '__main__':
 
     print("Saving combined segments...")
 
-    for(segment_index, indexed_segments) in combined_dict.items():
+    for (segment_index, indexed_segments) in combined_dict.items():
         old_file = indexed_segments[0].file
         new_file = MidiFile(type=old_file.type, ticks_per_beat=old_file.ticks_per_beat, charset=old_file.charset,
                             debug=old_file.debug, clip=old_file.clip)
@@ -73,3 +72,28 @@ if __name__ == '__main__':
         new_file.save(filename=f"{mid_location}/combined_segment_{segment_index}.mid")
 
     print("Segments saved.")
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Split a MIDI file into several segments "
+                                                 "so it may be queried for similarity")
+    parser.add_argument("midi_path", type=str, help="Path to MIDI file to segment")
+    parser.add_argument("--algorithm",
+                        default="graph",
+                        nargs=1,
+                        choices=["graph", "pitch_vector"],
+                        help="Choose which algorithm to run. (default: %(default)s)")
+    parser.add_argument("--melody_track", type=int, default=0,
+                        help="The track the file should be segmented with respect to (default: %(default)s)")
+    parser.add_argument("--chord_track", type=int, nargs="?",
+                        help="The track containing the chords in the MIDI file (if such a track exists)")
+
+    args = parser.parse_args()
+
+    if args.algorithm[0] == "graph":
+        segment_graph(args.midi_path, args.melody_track)
+    elif args.algorithm[0] == "pitch_vector":
+        raise NotImplementedError("Pitch vector algorithm chosen, but this is not implemented yet.")
+    else:
+        raise ValueError("Unrecognised algorithm choice")
+
