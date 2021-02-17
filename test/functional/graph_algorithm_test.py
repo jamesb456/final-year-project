@@ -2,10 +2,10 @@ import unittest
 import pathlib
 from mido import MidiTrack, MidiFile
 
-from project.segment.segment import reduce_segment
+
 from project.segment.lbdm_segmenter import LbdmSegmenter
 from project.visualisation.graph import pitch_time_graph, lbdm_graph
-from project.util.midtools import get_track_time_signatures
+
 # test for structure:
 
 # general procedure

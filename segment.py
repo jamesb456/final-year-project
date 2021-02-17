@@ -5,6 +5,7 @@ from typing import Optional
 from mido import MidiFile
 
 from project.segment.lbdm_segmenter import LbdmSegmenter
+from project.util.midtools import get_chord_timeline
 
 
 # temp: could use classes eventually
@@ -21,7 +22,8 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     print("Done Segmentation")
 
     if chord_track is not None:
-        pass  # parse chords into segments ?
+        chords = mid_file.tracks[chord_track]
+        chord_timeline = get_chord_timeline(chords)
     else:
         print("No chord track given, so skipping adding chords to segments.")
 
@@ -62,7 +64,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
             combined_dict[seg_ind].append(segment)
 
     print("Saving combined segments...")
-
     for (segment_index, indexed_segments) in combined_dict.items():
 
         new_file = MidiFile(**indexed_segments[0].get_file_metadata())

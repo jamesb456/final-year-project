@@ -1,6 +1,8 @@
 from math import floor
 from typing import Optional, Tuple
 
+from project.segment.chord import Chord
+
 
 class Note:
     """
@@ -21,9 +23,8 @@ class Note:
         (6, 8): [0.3, 0.1, 0.1, 0.3, 0.1, 0.1]
     }
 
-    def __init__(self, start: int, end: int, pitch: int, channel: int = 0, chord: Optional[int] = None,
+    def __init__(self, start: int, end: int, pitch: int, channel: int = 0, chord: Optional[Chord] = None,
                  start_message_index: Optional[int] = None, end_message_index: Optional[int] = None):
-
         self.start_time = start
         self.end_time = end
         self.pitch = pitch
@@ -55,6 +56,7 @@ class Note:
                 beat_strength = 0.4
             else:
                 beat_strength = 0.1
+
         return beat_strength
 
     def str(self):

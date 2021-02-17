@@ -88,7 +88,7 @@ class Segment:
 
     def reduce_segment(self, window_size: int = -1):
         if self.get_number_of_notes() < 2:
-            return Segment(self.__file, self.melody_track_ind,self.notes)
+            return Segment(self.__file, self.melody_track_ind, self.notes)
 
         reduced_notes = []
 
@@ -142,6 +142,7 @@ class Segment:
                     # first look at metrical position
                     # work out which beat the note is on.
                     beat_strength = note.get_metric_strength(self.ticks_per_beat, time_signature, time_signature_deltat)
+
                     note_weights.append(beat_strength)
 
                 # determine which note was more relevant (and find it's index)
@@ -159,9 +160,7 @@ class Segment:
 
     def get_file_metadata(self):
         """
-                old_file = indexed_segments[0].__file
-        new_file = MidiFile(type=old_file.type, ticks_per_beat=old_file.ticks_per_beat, charset=old_file.charset,
-                            debug=old_file.debug, clip=old_file.clip)
+
         Returns:
 
         """

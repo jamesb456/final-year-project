@@ -1,9 +1,12 @@
-import math, mido
+import math
+import mido
 import numpy as np
 
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
+from collections import defaultdict
 
+from project.segment.chord import Chord
 from project.segment.note import Note
 
 
@@ -54,25 +57,42 @@ def get_type_tally(mid: mido.MidiFile) -> Dict[str, int]:
     return type_dict
 
 
-def get_note_timeline(track: mido.MidiTrack) -> List[Note]:
-    """
-    Returns a list of tuples, each of which represents a note in the source MIDI track. The tuples contain:
+def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[int, Chord]]:
+    chords = []
+    chord_dict = defaultdict(list)
+    curr_time = 0
+    for i in range(len(chord_track)):
+        if chord_track[i].type == "note_on" and chord_track[i].velocity != 0:
+            chord_dict[curr_time].append(chord_track[i].note)
+        elif chord_track[i].type == "note_off" or (chord_track[i].type == "note_on" and chord_track[i].velocity == 0):
+            pass
+        curr_time += chord_track[i].time
 
+    return chords
+
+
+def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrack] = None) -> List[Note]:
+    """
+    Returns a list of notes derived from the messages within the MIDI track. The data stored within each note is
     1. The start time of the note (in ticks)
     2. The end time of the note (in ticks)
     3. The note value being played
-    4. The index of the note off message within ``track``
+    4. The output channel of the note. This is important so the instrument that is played is preserved
+    5. If chord_track is specified, the chord that was playing at the same time as the note
 
     Args:
         track: A track from a MIDI file
+        chord_track: A track containing what chords were played in the midi file.
 
     Returns:
-        A list of tuples describing the notes in the MIDI track and when they are played.
+        A list of notes derived from the messages in the MIDI track .
 
     """
+    if chord_track is not None:
+        chords = get_chord_timeline(chord_track)    
     notes = []
     curr_time = 0
-    for i in range(len(track)):
+    for i in range(len(track)):            
         if track[i].type == "note_on" and track[i].velocity != 0:
             # start of new note being played
             notes.append(Note(curr_time + track[i].time, -1, track[i].note, track[i].channel, None, i, None))
