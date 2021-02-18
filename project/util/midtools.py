@@ -4,7 +4,7 @@ import numpy as np
 
 
 from typing import Dict, List, Tuple, Optional
-from collections import defaultdict
+from collections import OrderedDict
 
 from project.segment.chord import Chord
 from project.segment.note import Note
@@ -57,17 +57,34 @@ def get_type_tally(mid: mido.MidiFile) -> Dict[str, int]:
     return type_dict
 
 
-def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[int, Chord]]:
+def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[Chord, int, int]]:
     chords = []
-    chord_dict = defaultdict(list)
+    on_dict = OrderedDict()
+    # off_dict = defaultdict(list)
     curr_time = 0
+    last_note_off_time = 0
     for i in range(len(chord_track)):
-        if chord_track[i].type == "note_on" and chord_track[i].velocity != 0:
-            chord_dict[curr_time].append(chord_track[i].note)
-        elif chord_track[i].type == "note_off" or (chord_track[i].type == "note_on" and chord_track[i].velocity == 0):
-            pass
         curr_time += chord_track[i].time
+        if chord_track[i].type == "note_on" and chord_track[i].velocity != 0:
+            if curr_time not in on_dict.keys():
+                on_dict[curr_time] = []
+            on_dict[curr_time].append(chord_track[i].note)
+        elif chord_track[i].type == "note_off" or (chord_track[i].type == "note_on" and chord_track[i].velocity == 0):
+            last_note_off_time = curr_time
+            # off_dict[curr_time].append(chord_track[i].note)
 
+    if len(on_dict) == 0:
+        return []
+
+    # get the end times of each chord
+    end_times = list(on_dict.keys())[1:]
+    end_times.append(last_note_off_time)
+    # assume that a chord only stops playing when the next one starts (this is sufficient for the nottingham dataset)
+    # TODO: change to also take into account that chords have an explicit time that they stop playing
+    i = 0
+    for (time, note_list) in on_dict.items():
+        chords.append((Chord.from_midi_values(*note_list), time, end_times[i]))
+        i += 1
     return chords
 
 
@@ -88,8 +105,7 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
         A list of notes derived from the messages in the MIDI track .
 
     """
-    if chord_track is not None:
-        chords = get_chord_timeline(chord_track)    
+
     notes = []
     curr_time = 0
     for i in range(len(track)):            
@@ -104,6 +120,14 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
             notes[-1].end_time = curr_time + track[i].time  # set the last note's end time
             notes[-1].end_message_index = i
         curr_time += track[i].time
+
+    if chord_track is not None:
+        chord_timeline = get_chord_timeline(chord_track)
+        # naive (this is inefficient)
+        for chord, chord_start, chord_end in chord_timeline:
+            for note in notes:
+                if note.start_time >= chord_start and note.end_time <= chord_end:
+                    note.chord = chord
 
     return notes
 

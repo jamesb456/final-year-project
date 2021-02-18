@@ -18,7 +18,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     mid_file = MidiFile(filename=midi_path)
     mid_name = pathlib.Path(midi_path).stem
     print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
-    segments = segmenter.create_segments(mid_file, melody_track)
+    segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
 
     if chord_track is not None:

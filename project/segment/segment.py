@@ -86,7 +86,7 @@ class Segment:
 
         return time_signatures
 
-    def reduce_segment(self, window_size: int = -1):
+    def reduce_segment(self, window_size: int = -1) -> 'Segment':
         if self.get_number_of_notes() < 2:
             return Segment(self.__file, self.melody_track_ind, self.notes)
 

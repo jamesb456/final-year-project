@@ -1,6 +1,7 @@
 from math import floor
 from typing import Optional, Tuple
 
+import project.util.constants as constants
 from project.segment.chord import Chord
 
 
@@ -13,15 +14,6 @@ class Note:
     playing the music)
 
     """
-
-    __TWELVE_NOTE_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-    __BEAT_STRENGTH_DICT = {
-        (4, 4): [0.5, 0.1, 0.3, 0.1],
-        (3, 4): [0.66, 0.17, 0.17],
-        (2, 4): [0.66, 0.33],
-        (3, 8): [0.66, 0.17, 0.17],
-        (6, 8): [0.3, 0.1, 0.1, 0.3, 0.1, 0.1]
-    }
 
     def __init__(self, start: int, end: int, pitch: int, channel: int = 0, chord: Optional[Chord] = None,
                  start_message_index: Optional[int] = None, end_message_index: Optional[int] = None):
@@ -49,8 +41,8 @@ class Note:
             round((ticks_since_time_signature % bar_length) / ticks_per_beat) % time_signature[0]
 
         beat_strength = 0
-        if time_signature in self.__BEAT_STRENGTH_DICT.keys():
-            beat_strength = self.__BEAT_STRENGTH_DICT[time_signature][beat_index]
+        if time_signature in constants.BEAT_STRENGTH_DICT.keys():
+            beat_strength = constants.BEAT_STRENGTH_DICT[time_signature][beat_index]
         else:
             if beat_index == 1:
                 beat_strength = 0.4
@@ -70,7 +62,7 @@ class Note:
         if self.pitch < 0 or self.pitch > 127:
             scientific_note = str(self.pitch)
         else:
-            scientific_note = self.__TWELVE_NOTE_SCALE[self.pitch % 12] + str(floor((self.pitch - 12) / 12.0))
+            scientific_note = constants.TWELVE_NOTE_SCALE[self.pitch % 12] + str(floor((self.pitch - 12) / 12.0))
 
         base = f"Note {scientific_note} start={self.start_time} length={self.duration} " \
                f"channel={self.channel}"

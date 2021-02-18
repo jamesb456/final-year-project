@@ -20,15 +20,17 @@ class LbdmSegmenter(Segmenter):
         self.ioi_weight = ioi_weight
         self.rest_weight = rest_weight
 
-    def create_segments(self, mid: MidiFile, track_index: int) -> List[Segment]:
+    def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[Segment]:
 
         # determine which track to segment
         track: MidiTrack = mid.tracks[track_index]
+        chord_track = None
+
+        if "chord_track" in kwargs.keys():
+            chord_track = mid.tracks[kwargs["chord_track"]]
 
         # get list of notes within the track
-        timeline = get_note_timeline(track)
-
-        # annotate with chords
+        timeline = get_note_timeline(track, chord_track)
 
         # get the lbdm "sequence profile" describing where segmentation should take place
         profile, _ = lbdm.lbdm(timeline, pitch_weight=self.pitch_weight, ioi_weight=self.ioi_weight,
@@ -45,27 +47,4 @@ class LbdmSegmenter(Segmenter):
 
         # get last few notes
         segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:]))
-        # code for saving segments to file
-        # put the end of the track into the last segment
-        # tracks = []
-        #    for seg_index in segmentation_indices:
-        #             seg_track = MidiTrack()
-        #             seg_track.extend(track[start_index+1:seg_index+1])
-        #             start_index = seg_index
-        #
-        #             tracks.append(seg_track)
-        # end_track = MidiTrack()
-        # end_track.extend(track[start_index + 1:])
-        # tracks.append(end_track)
-        #
-        # i = 0
-        # # create midi files out of segments. Note these segments may not represent
-        # # true segments of the track as listened as important messages such as
-        # # instrument, volume and tempo messages may only be at the start of the MIDI track
-        # for tr in tracks:
-        #     segment_mid = MidiFile(ticks_per_beat=mid.ticks_per_beat)
-        #     segment_mid.tracks.append(tr)
-        #     segment_mid.save(f"../../mid/generated/segment_{i}.mid")
-        #     i += 1
-
         return segments
