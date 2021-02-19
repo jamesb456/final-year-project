@@ -86,9 +86,9 @@ class Segment:
 
         return time_signatures
 
-    def reduce_segment(self, window_size: int = -1) -> 'Segment':
+    def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'Segment']:
         if self.get_number_of_notes() < 2:
-            return Segment(self.__file, self.melody_track_ind, self.notes)
+            return 1, Segment(self.__file, self.melody_track_ind, self.notes)
 
         reduced_notes = []
 
@@ -156,7 +156,7 @@ class Segment:
                 reduced_notes.append(new_note)
                 start_position += new_note.duration
 
-        return Segment(self.__file, self.melody_track_ind, reduced_notes)
+        return 1, Segment(self.__file, self.melody_track_ind, reduced_notes)
 
     def get_file_metadata(self):
         """
@@ -171,6 +171,8 @@ class Segment:
             "debug": self.__file.debug,
             "clip": self.__file.clip
         }
+
+
 
 
 

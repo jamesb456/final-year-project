@@ -26,7 +26,7 @@ class LbdmSegmenter(Segmenter):
         track: MidiTrack = mid.tracks[track_index]
         chord_track = None
 
-        if "chord_track" in kwargs.keys():
+        if "chord_track" in kwargs.keys() and kwargs["chord_track"] is not None:
             chord_track = mid.tracks[kwargs["chord_track"]]
 
         # get list of notes within the track

@@ -5,6 +5,7 @@ from typing import Optional
 from mido import MidiFile
 
 from project.segment.lbdm_segmenter import LbdmSegmenter
+from project.algorithms.graph_based.segment_graph import SegmentGraph
 from project.util.midtools import get_chord_timeline
 
 
@@ -21,18 +22,16 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
 
-    if chord_track is not None:
-        chords = mid_file.tracks[chord_track]
-        chord_timeline = get_chord_timeline(chords)
-    else:
-        print("No chord track given, so skipping adding chords to segments.")
-
     mid_location = f"mid/generated/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
     print("Saving original segments to {}...".format(pathlib.Path(mid_location).resolve()))
 
+    graph = SegmentGraph(mid_file, melody_track, chord_track)
+
     for (index, segment) in enumerate(segments):
-        segment.save_segment(f"{mid_location}/segment_{index}.mid")
+        midi_filepath = f"{mid_location}/segment_{index}.mid"
+        segment.save_segment(midi_filepath)
+        graph.add_node(midi_filepath)
 
     print("Starting recursive reduction")
 
@@ -46,7 +45,11 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
         for (seg_ind, segment) in current_segments:
             # don't reduce if there's only one note left
             if segment.get_number_of_notes() > 1:
-                reduced_segments.append((seg_ind, segment.reduce_segment()))
+                weight, reduced_segment = segment.reduce_segment()
+                reduced_filepath = f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"
+                reduced_segments.append((seg_ind,reduced_segment))
+                reduced_segment.save_segment(filepath=reduced_filepath)
+                graph.add_node(filepath=reduced_filepath)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
         i += 1
