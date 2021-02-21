@@ -60,7 +60,7 @@ class Note:
     def __str__(self):
 
         if self.pitch < 0 or self.pitch > 127:
-            scientific_note = str(self.pitch)
+            scientific_note = str(self.pitch) + " (out of range)"
         else:
             scientific_note = constants.TWELVE_NOTE_SCALE[self.pitch % 12] + str(floor((self.pitch - 12) / 12.0))
 

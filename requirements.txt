@@ -3,3 +3,4 @@ matplotlib
 mido
 networkx
 pydot
+pygraphviz

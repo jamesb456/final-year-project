@@ -27,11 +27,12 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     print("Saving original segments to {}...".format(pathlib.Path(mid_location).resolve()))
 
     graph = SegmentGraph(mid_file, melody_track, chord_track)
-
+    graph.add_root(midi_path)
     for (index, segment) in enumerate(segments):
         midi_filepath = f"{mid_location}/segment_{index}.mid"
         segment.save_segment(midi_filepath)
         graph.add_node(midi_filepath)
+        graph.add_edge(midi_path, midi_filepath, weight=1)
 
     print("Starting recursive reduction")
 
@@ -47,21 +48,27 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
             if segment.get_number_of_notes() > 1:
                 weight, reduced_segment = segment.reduce_segment()
                 reduced_filepath = f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"
-                reduced_segments.append((seg_ind,reduced_segment))
+                reduced_segments.append((seg_ind, reduced_segment))
                 reduced_segment.save_segment(filepath=reduced_filepath)
                 graph.add_node(filepath=reduced_filepath)
+                if i > 1:
+                    graph.add_edge(f1=f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid",
+                                   f2=reduced_filepath)
+                else:
+                    graph.add_edge(f1=f"{mid_location}/segment_{seg_ind}.mid",
+                                   f2=reduced_filepath)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
         i += 1
 
     print("Done reducing as all segments have at most 1 note.")
-    print("Saving segments...")
+
+    print("Saving graph structure")
+    graph.save_to_file(filepath=f"{mid_location}/graph.dot")
 
     combined_dict = {}
     for (iteration, r_segments) in segment_dict.items():
-        print(f"\tSaving iteration {iteration}")
         for (seg_ind, segment) in r_segments:
-            segment.save_segment(filepath=f"{mid_location}/segment_{seg_ind}_reduction_{iteration}.mid")
             if seg_ind not in combined_dict.keys():
                 combined_dict[seg_ind] = []
             combined_dict[seg_ind].append(segment)
