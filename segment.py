@@ -27,7 +27,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     print("Saving original segments to {}...".format(pathlib.Path(mid_location).resolve()))
 
     graph = SegmentGraph(mid_file, melody_track, chord_track)
-    graph.add_root(midi_path)
+
     for (index, segment) in enumerate(segments):
         midi_filepath = f"{mid_location}/segment_{index}.mid"
         segment.save_segment(midi_filepath)

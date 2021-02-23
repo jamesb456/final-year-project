@@ -41,7 +41,10 @@ class LbdmSegmenter(Segmenter):
         segments = []
         last_segmentation_index = -1
         for profile_index, boundary_strength in np.ndenumerate(profile):
-            if boundary_strength > self.threshold:
+            # ignore boundary if it's within the first few notes of a piece
+            if timeline[profile_index[0]].end_time < mid.ticks_per_beat * 4:
+                pass
+            elif boundary_strength > self.threshold:
                 segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:profile_index[0]+1]))
                 last_segmentation_index = profile_index[0]
 

@@ -133,7 +133,7 @@ class Segment:
                 note_weights = []
                 # work out the time signature (assume 4/4 that started at t=0 if not specified)
                 time_sig_event = (0, (4, 4))
-                if len(time_signature_events) > 1:
+                if len(time_signature_events) > 0:
                     time_sig_event = time_signature_events[-1]  # choose the most recent time signature
 
                 time_signature_deltat = time_sig_event[0]
@@ -142,16 +142,39 @@ class Segment:
                     # first look at metrical position
                     # work out which beat the note is on.
                     beat_strength = note.get_metric_strength(self.ticks_per_beat, time_signature, time_signature_deltat)
-
-                    note_weights.append(beat_strength)
+                    consonance_score = note.get_consonance_score()
+                    note_weights.append((beat_strength, consonance_score))
 
                 # determine which note was more relevant (and find it's index)
-                index, weight = max(enumerate(note_weights),
-                                    key=operator.itemgetter(1))  # get max note weight and index
+                strongest_index = 0
+                strongest_total = 0
+                strongest_beat = 0
+                strongest_consonance = 0
+
+                # determine the index of the note with the strongest weight
+                # in case of a tie, first consider the one on the stronger beat,
+                # then the one with the stronger note consonance.
+                # If they are still tied, just keep the earlier note
+                for index, (beat, consonance) in enumerate(note_weights):
+                    if beat + consonance > strongest_total:
+                        strongest_total = beat + consonance
+                        strongest_index = index
+                        strongest_beat = beat
+                        strongest_consonance = consonance
+                    elif beat + consonance == strongest_total:
+                        if beat > strongest_beat:
+                            strongest_index = index
+                            strongest_beat = beat
+                            strongest_consonance = consonance
+                        elif consonance > strongest_consonance:
+                            strongest_index = index
+                            strongest_beat = beat
+                            strongest_consonance = consonance
 
                 # use weight in graph later
                 new_note = Note(start_position, window_notes[-1].end_time,
-                                window_notes[index].pitch, window_notes[index].channel, window_notes[index].chord)
+                                window_notes[strongest_index].pitch, window_notes[strongest_index].channel,
+                                window_notes[strongest_index].chord)
                 # we don't care about start_message_index, end_message_index because it's no longer from a track
                 reduced_notes.append(new_note)
                 start_position += new_note.duration

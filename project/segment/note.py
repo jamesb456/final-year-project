@@ -51,6 +51,15 @@ class Note:
 
         return beat_strength
 
+    def get_consonance_score(self):
+        # get the difference between this note's pitch and it's underlying chord
+        if self.chord is None:
+            return 0.5
+        else:
+            note_tone = self.pitch % constants.OCTAVE_SEMITONE_COUNT
+            interval = abs(self.chord.root_tone - note_tone)
+            return constants.CONSONANCE_SCORE_DICT[interval]
+
     def str(self):
         return self.__str__()
 

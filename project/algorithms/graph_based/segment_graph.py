@@ -12,9 +12,7 @@ class SegmentGraph:
         self.mid_file = mid_file
         self.melody_track = melody_track
         self.chord_track = chord_track
-
-    def add_root(self, filepath: str):
-        self.__graph.add_node(filepath, type="root")
+        self.__graph.add_node(mid_file.filename, label="root", melody_track=melody_track, chord_track=chord_track)
 
     def add_node(self, filepath: str):
         self.__graph.add_node(filepath)
@@ -26,3 +24,7 @@ class SegmentGraph:
         pos = networkx.nx_agraph.graphviz_layout(self.__graph, prog="dot")
         networkx.draw(self.__graph, pos=pos)
         write_dot(self.__graph, filepath)
+
+    @staticmethod
+    def from_file(graph_path: str):
+        pass
