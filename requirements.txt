@@ -4,3 +4,4 @@ mido
 networkx
 pydot
 pygraphviz
+cython

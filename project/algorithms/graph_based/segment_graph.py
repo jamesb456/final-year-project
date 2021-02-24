@@ -1,3 +1,5 @@
+import pathlib
+
 import networkx
 
 from typing import Optional
@@ -12,7 +14,8 @@ class SegmentGraph:
         self.mid_file = mid_file
         self.melody_track = melody_track
         self.chord_track = chord_track
-        self.__graph.add_node(mid_file.filename, label="root", melody_track=melody_track, chord_track=chord_track)
+        self.__graph.add_node(str(pathlib.Path(mid_file.filename).resolve()), label="root", melody_track=melody_track, chord_track=chord_track)
+        pass
 
     def add_node(self, filepath: str):
         self.__graph.add_node(filepath)

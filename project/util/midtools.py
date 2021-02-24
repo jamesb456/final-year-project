@@ -6,6 +6,7 @@ import numpy as np
 from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
+
 from project.segment.chord import Chord
 from project.segment.note import Note
 

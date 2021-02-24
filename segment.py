@@ -1,6 +1,9 @@
 import argparse
 import pathlib
+import time
+import glob
 from typing import Optional
+
 
 from mido import MidiFile
 
@@ -15,9 +18,11 @@ def segment_vector(filepath: str, melody_track: int, chord_track: Optional[int])
 
 
 def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int]):
+    time_start = time.time()
+    resolved_path = pathlib.Path(midi_path).resolve()
     segmenter = LbdmSegmenter()
-    mid_file = MidiFile(filename=midi_path)
-    mid_name = pathlib.Path(midi_path).stem
+    mid_file = MidiFile(filename=resolved_path)
+    mid_name = resolved_path.stem
     print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
@@ -29,10 +34,10 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     graph = SegmentGraph(mid_file, melody_track, chord_track)
 
     for (index, segment) in enumerate(segments):
-        midi_filepath = f"{mid_location}/segment_{index}.mid"
+        midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid").resolve())
         segment.save_segment(midi_filepath)
         graph.add_node(midi_filepath)
-        graph.add_edge(midi_path, midi_filepath, weight=1)
+        graph.add_edge(str(resolved_path), midi_filepath, weight=1)
 
     print("Starting recursive reduction")
 
@@ -47,15 +52,15 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
             # don't reduce if there's only one note left
             if segment.get_number_of_notes() > 1:
                 weight, reduced_segment = segment.reduce_segment()
-                reduced_filepath = f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"
+                reduced_filepath = str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid").resolve())
                 reduced_segments.append((seg_ind, reduced_segment))
                 reduced_segment.save_segment(filepath=reduced_filepath)
                 graph.add_node(filepath=reduced_filepath)
                 if i > 1:
-                    graph.add_edge(f1=f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid",
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid").resolve()),
                                    f2=reduced_filepath)
                 else:
-                    graph.add_edge(f1=f"{mid_location}/segment_{seg_ind}.mid",
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}.mid").resolve()),
                                    f2=reduced_filepath)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
@@ -86,12 +91,14 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
         new_file.save(filename=f"{mid_location}/combined_segment_{segment_index}.mid")
 
     print("Segments saved.")
+    time_end = time.time()
+    print(f"Time elapsed: {time_end - time_start} seconds")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Split a MIDI file into several segments "
                                                  "so it may be queried for similarity")
-    parser.add_argument("midi_path", type=str, help="Path to MIDI file to segment")
+    parser.add_argument("midi_paths", nargs="+", type=str, help="Path to MIDI file to segment")
     parser.add_argument("--algorithm",
                         default=["graph"],
                         nargs=1,
@@ -105,7 +112,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.algorithm[0] == "graph":
-        segment_graph(args.midi_path, args.melody_track, args.chord_track)
+        paths = []
+        for midi_path in args.midi_paths:
+            globbed_paths = glob.glob(midi_path)
+            for path in globbed_paths:
+                paths.append(path)
+        for path in paths:
+            segment_graph(path, args.melody_track, args.chord_track)
     elif args.algorithm[0] == "pitch_vector":
         raise NotImplementedError("Pitch vector algorithm chosen, but this is not implemented yet.")
     else:

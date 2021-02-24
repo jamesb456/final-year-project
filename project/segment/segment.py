@@ -1,5 +1,6 @@
 import operator
-from typing import List, Optional, Tuple
+from collections import deque
+from typing import List, Optional, Tuple, Deque
 
 from mido import MidiFile, MidiTrack, Message, MetaMessage
 from project.segment.note import Note
@@ -33,6 +34,16 @@ class Segment:
     def ticks_per_beat(self) -> int:
         return self.__file.ticks_per_beat
 
+    def __get_melody_instructional_messages(self) -> Deque[Tuple[int, Message]]:
+        time = 0
+        meta_messages = deque()
+        for message in self.__melody_track:
+            if message.is_meta or message.type == "control_change" or message.type == "program_change":
+                meta_messages.append((time + message.time, message))
+            time += message.time
+
+        return meta_messages
+
     def get_number_of_notes(self):
         return len(self.notes)
 
@@ -53,7 +64,8 @@ class Segment:
 
     def save_segment(self, filepath):
         # create new MidiFile with the same metadata
-        new_file = MidiFile(type=self.__file.type, ticks_per_beat=self.__file.ticks_per_beat, charset=self.__file.charset,
+        new_file = MidiFile(type=self.__file.type, ticks_per_beat=self.__file.ticks_per_beat,
+                            charset=self.__file.charset,
                             debug=self.__file.debug, clip=self.__file.clip)
 
         # add all the meta messages (e.g. time signature, instrument)
@@ -62,19 +74,33 @@ class Segment:
         new_file.save(filename=filepath)
 
     def copy_notes_to_track(self, track: MidiTrack):
-        track.extend([message for message in self.__melody_track
-                      if (message.is_meta and message.type != "end_of_track")
-                      or message.type == "control_change" or message.type == "program_change"])
+
+        message_queue = self.__get_melody_instructional_messages()
+
         # add the list of notes within the segment as Midi messages
+        current_meta_index = 0
+        current_time = self.start_time
         for (index, note) in enumerate(self.notes):
-            # TODO: add velocity into note definition?
+            # add meta messages at the appropriate time
+            if message_queue[0][0] <= current_time:
+                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
+                    track.append(message_queue.popleft()[1])
+
+            time_since_last_note = note.start_time - self.notes[index - 1].end_time if index != 0 else 0
             track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
-                                 time=note.start_time - self.notes[index - 1].end_time if index != 0 else 0))
+                                 time=time_since_last_note))
+            current_time += time_since_last_note
+
+            if message_queue[0][0] <= current_time:
+                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
+                    track.append(message_queue.popleft()[1])
+
             track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
                                  time=note.duration))  # running status note off
-
-        # TODO: end of track at same offset as in the source track
-        track.append(MetaMessage(type="end_of_track", time=0))
+            current_time += note.duration
+        # add remaining meta messages
+        while len(message_queue) > 0:
+            track.append(message_queue.popleft()[1])
 
     def get_track_time_signatures(self) -> List[Tuple[int, Tuple[int, int]]]:
         time_signatures = []
@@ -194,9 +220,3 @@ class Segment:
             "debug": self.__file.debug,
             "clip": self.__file.clip
         }
-
-
-
-
-
-
