@@ -1,17 +1,21 @@
-import operator
+import project.util.constants as constants
 
-from collections import deque, namedtuple
+from collections import deque
 from typing import List, Optional, Tuple, Deque
 
-from mido import MidiFile, MidiTrack, Message, MetaMessage
+from mido import MidiFile, MidiTrack, Message
 from project.segment.note import Note
 from project.segment.signature import TimeSignature, KeySignature
+from project.util.midtools import get_track_signatures
+
 
 class Segment:
     def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note]):
         self.__file = file  # source track
         self.notes = notes
         self.melody_track_ind = melody_track_ind
+        # precompute time and key signatures
+        self.time_signature_events, self.key_signature_events = get_track_signatures(file.tracks[melody_track_ind])
 
     @property
     def __melody_track(self) -> MidiTrack:
@@ -44,6 +48,24 @@ class Segment:
             time += message.time
 
         return meta_messages
+
+    def __get_time_signature_at(self, time: int) -> Tuple[int, TimeSignature]:
+        last_time_sig_event = 0, TimeSignature.default()
+        for time_sig_time, time_sig_value in self.time_signature_events:
+            if time_sig_time <= time:
+                last_time_sig_event = time_sig_time, time_sig_value
+            else:
+                break
+        return last_time_sig_event
+
+    def __get_key_signature_at(self, time: int) -> KeySignature:
+        last_key_sig = KeySignature.default()
+        for key_sig_time, key_sig_value in self.key_signature_events:
+            if key_sig_time <= time:
+                last_key_sig = key_sig_value
+            else:
+                break
+        return last_key_sig
 
     def get_number_of_notes(self):
         return len(self.notes)
@@ -103,22 +125,6 @@ class Segment:
         while len(message_queue) > 0:
             track.append(message_queue.popleft()[1])
 
-    def get_track_signatures(self) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
-        time_signatures = []
-        key_signatures = []
-        start_time = 0
-        for message in self.__file.tracks[self.melody_track_ind]:
-            if message.type == "time_signature":
-                time_signatures.append((start_time + message.time, TimeSignature(message.numerator, message.denominator)))
-            elif message.type == "key_signature":
-                if message.key.endswith("m"):  # is minor key
-                    key_signatures.append((start_time + message.time, KeySignature(message.key[:-1], True)))
-                else:
-                    key_signatures.append((start_time + message.time, KeySignature(message.key, False)))
-            start_time += message.time
-
-        return time_signatures, key_signatures
-
     def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'Segment']:
         if self.get_number_of_notes() < 2:
             return 1, Segment(self.__file, self.melody_track_ind, self.notes)
@@ -133,11 +139,6 @@ class Segment:
 
             window_size = shortest_note_length * 2
 
-        # get the times of time signature events and what the signatures are
-        time_signature_events, key_signature_events = self.get_track_signatures()
-        # ignore time signatures after this point
-        time_signature_events = [(deltat, time_sig) for (deltat, time_sig) in time_signature_events if
-                                 deltat <= self.start_time]
 
         weight = 0
 
@@ -166,25 +167,14 @@ class Segment:
 
             else:  # choose the most relevant note
                 note_weights = []
-                # work out the time signature (assume 4/4 that started at t=0 if not specified)
-                time_sig_event = (0, TimeSignature(4, 4))
-                if len(time_signature_events) > 0:
-                    time_sig_event = time_signature_events[-1]  # choose the most recent time signature
-                key_sig_event = (0, KeySignature("C",False))
-                if len(key_signature_events) > 0:
-                    key_sig_event = key_signature_events[-1]
-
-                time_signature_deltat = time_sig_event[0]
-                time_signature = time_sig_event[1]
-
-                key_signature = key_sig_event[1]
 
                 for note in window_notes:
-                    # first look at metrical position
-                    # work out which beat the note is on.
-                    beat_strength = note.get_metric_strength(self.ticks_per_beat, time_signature, time_signature_deltat)
+                    time_sig_time, time_sig_value = self.__get_time_signature_at(note.start_time)
+                    key_sig_value = self.__get_key_signature_at(note.start_time)
+
+                    beat_strength = note.get_metric_strength(self.ticks_per_beat, time_sig_value, time_sig_time)
                     consonance_score = note.get_consonance_score()
-                    functional_score = note.get_functional_score(key_signature)
+                    functional_score = note.get_functional_score(key_sig_value)
                     note_weights.append((beat_strength, consonance_score, functional_score))
 
                 # determine which note was more relevant (and find it's index)
@@ -202,7 +192,7 @@ class Segment:
                 for index, (beat, consonance, functional) in enumerate(note_weights):
                     if beat + consonance + functional > strongest_total:
                         prev_strongest_total = strongest_total
-                        strongest_total = beat + consonance
+                        strongest_total = beat + consonance + functional
                         strongest_index = index
                         strongest_beat = beat
                         strongest_consonance = consonance

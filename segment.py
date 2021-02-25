@@ -130,6 +130,11 @@ if __name__ == '__main__':
             globbed_paths = glob.glob(mid_path)
             for path in globbed_paths:
                 paths.append(path)
+
+        if len(paths) == 0:
+            sys.stderr.write("Error: no MIDI files correspond to the path(s) given\n")
+            sys.stderr.flush()
+
         for path in paths:
             result = segment_graph(path, args.melody_track, args.chord_track)
             if result != 0:

@@ -11,6 +11,7 @@ from collections import OrderedDict
 
 from project.segment.chord import Chord
 from project.segment.note import Note
+from project.segment.signature import TimeSignature, KeySignature
 
 
 def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
@@ -135,4 +136,19 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
     return notes
 
 
+def get_track_signatures(track: mido.MidiTrack) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
+    time_signatures = []
+    key_signatures = []
+    start_time = 0
+    for message in track:
+        if message.type == "time_signature":
+            time_signatures.append(
+                (start_time + message.time, TimeSignature(message.numerator, message.denominator)))
+        elif message.type == "key_signature":
+            if message.key.endswith("m"):  # is minor key
+                key_signatures.append((start_time + message.time, KeySignature(message.key[:-1], True)))
+            else:
+                key_signatures.append((start_time + message.time, KeySignature(message.key, False)))
+        start_time += message.time
 
+    return time_signatures, key_signatures

@@ -7,3 +7,5 @@ __pycache__
 venv/
 mid/generated/
 /mid/nottingham/
+
+error.log
