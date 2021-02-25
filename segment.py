@@ -9,7 +9,7 @@ from typing import Optional
 from mido import MidiFile
 
 from project.segment.lbdm_segmenter import LbdmSegmenter
-from project.algorithms.graph_based.segment_graph import SegmentGraph
+from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.util.midtools import get_chord_timeline
 
 
@@ -30,7 +30,8 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     for (msg1, msg2) in zip(mid_file.tracks[melody_track][1:], mid_file.tracks[melody_track]):
         if (msg1.type == "note_on" and msg2.type == "note_on") \
                 or (msg1.type == "note_off" and msg2.type == "note_off"):
-            sys.stderr.write("Error: this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
+            sys.stderr.write(f"Error for Midi File @ {midi_path}: "
+                             f"this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
             sys.stderr.flush()
             return -1
 
@@ -41,7 +42,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
     print("Saving original segments to {}...".format(pathlib.Path(mid_location)))
 
-    graph = SegmentGraph(mid_file, melody_track, chord_track)
+    graph = MidiGraph(mid_file, melody_track, chord_track)
 
     for (index, segment) in enumerate(segments):
         midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
@@ -68,10 +69,10 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
                 graph.add_node(filepath=reduced_filepath)
                 if i > 1:
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid")),
-                                   f2=reduced_filepath)
+                                   f2=reduced_filepath, weight=weight)
                 else:
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}.mid")),
-                                   f2=reduced_filepath)
+                                   f2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
         i += 1
@@ -134,7 +135,7 @@ if __name__ == '__main__':
             if result != 0:
                 err_count += 1
         graph_end = time.time()
-        print(f"Done segmenting all mid files. Total time taken was {graph_end - graph_start} seconds.")
+        print(f"\n\nDone segmenting all mid files. Total time taken was {graph_end - graph_start} seconds.")
         sys.stderr.write(f"Total unprocessed files due to errors is: {err_count}\n")
     elif args.algorithm[0] == "pitch_vector":
         raise NotImplementedError("Pitch vector algorithm chosen, but this is not implemented yet.")

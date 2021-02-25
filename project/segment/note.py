@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 
 import project.util.constants as constants
 from project.segment.chord import Chord
+from project.segment.signature import TimeSignature, KeySignature
 
 
 class Note:
@@ -29,20 +30,20 @@ class Note:
     def duration(self) -> int:
         return self.end_time - self.start_time
 
-    def get_metric_strength(self, ticks_per_beat: int, time_signature: Tuple[int, int],
+    def get_metric_strength(self, ticks_per_beat: int, time_signature: TimeSignature,
                             time_since_time_sig: int) -> float:
         ticks_since_time_signature = self.start_time - time_since_time_sig
-        bar_length = (ticks_per_beat * (time_signature[0] * (4 / time_signature[1])))
+        bar_length = (ticks_per_beat * (time_signature.numerator * (4 / time_signature.denominator)))
         # approx beat (zero index) is the time from last signature change to current note, modulo the length
         # of one full bar. This gives the number of ticks you are through the current bar/measure. Now scale
         # in terms of beat and restrain from 0 to 3
         # round to nearest beat. if this would round to too high an index, consider it part of the next beat
         beat_index = \
-            round((ticks_since_time_signature % bar_length) / ticks_per_beat) % time_signature[0]
+            round((ticks_since_time_signature % bar_length) / ticks_per_beat) % time_signature.numerator
 
         beat_strength = 0
-        if time_signature in constants.BEAT_STRENGTH_DICT.keys():
-            beat_strength = constants.BEAT_STRENGTH_DICT[time_signature][beat_index]
+        if (time_signature.numerator, time_signature.denominator) in constants.BEAT_STRENGTH_DICT.keys():
+            beat_strength = constants.BEAT_STRENGTH_DICT[(time_signature.numerator, time_signature.denominator)][beat_index]
         else:
             if beat_index == 1:
                 beat_strength = 0.4
@@ -81,3 +82,10 @@ class Note:
 
     def __repr__(self):
         return self.__str__()
+
+    def get_functional_score(self, key_signature: KeySignature):
+        if self.chord is None:  # if there is no chord associated with this note, return an average strength
+            return 0.5
+        else:
+            functional_score = constants.FUNCTIONAL_SCORE_DICT[abs(key_signature.note - self.chord.root_tone)]
+            return functional_score

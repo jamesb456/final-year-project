@@ -8,7 +8,7 @@ from mido import MidiFile, MidiTrack
 from networkx.drawing.nx_pydot import write_dot
 
 
-class SegmentGraph:
+class MidiGraph:
     def __init__(self, mid_file: MidiFile, melody_track: int, chord_track: Optional[int] = None):
         self.__graph = networkx.Graph()
         self.mid_file = mid_file

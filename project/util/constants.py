@@ -21,7 +21,20 @@ CONSONANCE_SCORE_DICT = {
     11: 0.2,
 }
 
-FUNCTIONAL_SCORE_DICT = {}
+FUNCTIONAL_SCORE_DICT = {
+    0: 1.0,
+    1: 0.2,
+    2: 0.5,
+    3: 0.4,
+    4: 0.4,
+    5: 0.8,
+    6: 0.3,
+    7: 0.9,
+    8: 0.1,
+    9: 0.6,
+    10: 0.7,
+    11: 0.7,
+}
 
 
 OCTAVE_SEMITONE_COUNT = 12
