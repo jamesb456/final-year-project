@@ -31,7 +31,6 @@ class LbdmSegmenter(Segmenter):
 
         # get list of notes within the track
         timeline = get_note_timeline(track, chord_track)
-
         # get the lbdm "sequence profile" describing where segmentation should take place
         profile, _ = lbdm.lbdm(timeline, pitch_weight=self.pitch_weight, ioi_weight=self.ioi_weight,
                                rest_weight=self.rest_weight, max_time_difference=mid.ticks_per_beat * 4)

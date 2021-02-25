@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import sys
 import time
 import glob
 from typing import Optional
@@ -17,24 +18,33 @@ def segment_vector(filepath: str, melody_track: int, chord_track: Optional[int])
     pass
 
 
-def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int]):
+def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int]) -> int:
     time_start = time.time()
-    resolved_path = pathlib.Path(midi_path).resolve()
+    resolved_path = pathlib.Path(midi_path)
     segmenter = LbdmSegmenter()
-    mid_file = MidiFile(filename=resolved_path)
+    mid_file = MidiFile(filename=str(resolved_path))
     mid_name = resolved_path.stem
+    print("\n=========================================================")
     print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
+    print("=========================================================")
+    for (msg1, msg2) in zip(mid_file.tracks[melody_track][1:], mid_file.tracks[melody_track]):
+        if (msg1.type == "note_on" and msg2.type == "note_on") \
+                or (msg1.type == "note_off" and msg2.type == "note_off"):
+            sys.stderr.write("Error: this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
+            sys.stderr.flush()
+            return -1
+
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
 
     mid_location = f"mid/generated/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
-    print("Saving original segments to {}...".format(pathlib.Path(mid_location).resolve()))
+    print("Saving original segments to {}...".format(pathlib.Path(mid_location)))
 
     graph = SegmentGraph(mid_file, melody_track, chord_track)
 
     for (index, segment) in enumerate(segments):
-        midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid").resolve())
+        midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
         segment.save_segment(midi_filepath)
         graph.add_node(midi_filepath)
         graph.add_edge(str(resolved_path), midi_filepath, weight=1)
@@ -52,15 +62,15 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
             # don't reduce if there's only one note left
             if segment.get_number_of_notes() > 1:
                 weight, reduced_segment = segment.reduce_segment()
-                reduced_filepath = str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid").resolve())
+                reduced_filepath = str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"))
                 reduced_segments.append((seg_ind, reduced_segment))
                 reduced_segment.save_segment(filepath=reduced_filepath)
                 graph.add_node(filepath=reduced_filepath)
                 if i > 1:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid").resolve()),
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid")),
                                    f2=reduced_filepath)
                 else:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}.mid").resolve()),
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}.mid")),
                                    f2=reduced_filepath)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
@@ -93,12 +103,13 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     print("Segments saved.")
     time_end = time.time()
     print(f"Time elapsed: {time_end - time_start} seconds")
+    return 0
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Split a MIDI file into several segments "
                                                  "so it may be queried for similarity")
-    parser.add_argument("midi_paths", nargs="+", type=str, help="Path to MIDI file to segment")
+    parser.add_argument("midi_paths", nargs="+", type=str, help="Path to MIDI file(s) to segment")
     parser.add_argument("--algorithm",
                         default=["graph"],
                         nargs=1,
@@ -110,15 +121,21 @@ if __name__ == '__main__':
                         help="The track containing the chords in the MIDI file (if such a track exists)")
 
     args = parser.parse_args()
-
+    err_count = 0
     if args.algorithm[0] == "graph":
+        graph_start = time.time()
         paths = []
-        for midi_path in args.midi_paths:
-            globbed_paths = glob.glob(midi_path)
+        for mid_path in args.midi_paths:
+            globbed_paths = glob.glob(mid_path)
             for path in globbed_paths:
                 paths.append(path)
         for path in paths:
-            segment_graph(path, args.melody_track, args.chord_track)
+            result = segment_graph(path, args.melody_track, args.chord_track)
+            if result != 0:
+                err_count += 1
+        graph_end = time.time()
+        print(f"Done segmenting all mid files. Total time taken was {graph_end - graph_start} seconds.")
+        sys.stderr.write(f"Total unprocessed files due to errors is: {err_count}\n")
     elif args.algorithm[0] == "pitch_vector":
         raise NotImplementedError("Pitch vector algorithm chosen, but this is not implemented yet.")
     else:

@@ -1,4 +1,6 @@
 import math
+import sys
+
 import mido
 import numpy as np
 
@@ -106,20 +108,20 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
         A list of notes derived from the messages in the MIDI track .
 
     """
-
     notes = []
+    last_note_dict = {}
     curr_time = 0
     for i in range(len(track)):            
         if track[i].type == "note_on" and track[i].velocity != 0:
             # start of new note being played
             notes.append(Note(curr_time + track[i].time, -1, track[i].note, track[i].channel, None, i, None))
-            # notes.append((curr_time + track[i].time, track[i].note))
+            last_note_dict[track[i].note] = len(notes) - 1
         elif track[i].type == "note_off" or (track[i].type == "note_on" and track[i].velocity == 0):
             # note off (inc note on "running status")
             # naive: assume the previous note_on message was the one this note_off corresponds to
             # (not necessarily the case in polyphonic music)
-            notes[-1].end_time = curr_time + track[i].time  # set the last note's end time
-            notes[-1].end_message_index = i
+            notes[last_note_dict[track[i].note]].end_time = curr_time + track[i].time  # set the last note's end time
+            notes[last_note_dict[track[i].note]].end_message_index = i
         curr_time += track[i].time
 
     if chord_track is not None:
