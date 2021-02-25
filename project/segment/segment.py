@@ -193,6 +193,7 @@ class Segment:
                 strongest_beat = 0
                 strongest_consonance = 0
                 strongest_functional = 0
+                prev_strongest_total = 0
 
                 # determine the index of the note with the strongest weight
                 # in case of a tie, first consider the one on the stronger beat,
@@ -200,6 +201,7 @@ class Segment:
                 # If they are still tied, just keep the earlier note
                 for index, (beat, consonance, functional) in enumerate(note_weights):
                     if beat + consonance + functional > strongest_total:
+                        prev_strongest_total = strongest_total
                         strongest_total = beat + consonance
                         strongest_index = index
                         strongest_beat = beat
@@ -230,9 +232,9 @@ class Segment:
                 reduced_notes.append(new_note)
                 start_position += new_note.duration
 
-                # weight graph based on the mean of the consonace/functional/metric score totoal
+                # weight graph based on the mean of the consonance/functional/metric score total
                 # in the paper this is called the *semantic* distance measure
-                weight += (strongest_total / 3)
+                weight += ((strongest_total - prev_strongest_total) / 3)
 
         return weight, Segment(self.__file, self.melody_track_ind, reduced_notes)
 
