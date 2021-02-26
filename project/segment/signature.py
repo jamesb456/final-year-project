@@ -15,7 +15,14 @@ class TimeSignature:
 
 class KeySignature:
     def __init__(self, note: str, minor: bool):
-        self.note = constants.TWELVE_NOTE_SCALE.index(note)
+        if note in constants.TWELVE_NOTE_SCALE:
+            self.note = constants.TWELVE_NOTE_SCALE.index(note)
+        elif note in constants.TWELVE_NOTE_SCALE_FLAT:
+            self.note = constants.TWELVE_NOTE_SCALE_FLAT.index(note)
+        else:
+            raise ValueError(f"Error: note ''{note}'' could not be parsed into a pitch number"
+                             f"when trying to create a valid key signature ")
+
         self.minor = minor
 
     @staticmethod

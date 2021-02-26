@@ -1,4 +1,5 @@
 TWELVE_NOTE_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+TWELVE_NOTE_SCALE_FLAT = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
 BEAT_STRENGTH_DICT = {
     (4, 4): [0.5, 0.1, 0.3, 0.1],
     (3, 4): [0.66, 0.17, 0.17],
