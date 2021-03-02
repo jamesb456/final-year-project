@@ -43,7 +43,8 @@ class Note:
 
         beat_strength = 0
         if (time_signature.numerator, time_signature.denominator) in constants.BEAT_STRENGTH_DICT.keys():
-            beat_strength = constants.BEAT_STRENGTH_DICT[(time_signature.numerator, time_signature.denominator)][beat_index]
+            beat_strength = constants.BEAT_STRENGTH_DICT[(time_signature.numerator, time_signature.denominator)][
+                beat_index]
         else:
             sys.stderr.write(f"Time signature {time_signature.__repr__()} not in beat strength dict\n")
             sys.stderr.flush()
@@ -91,3 +92,8 @@ class Note:
     def __repr__(self):
         return self.__str__()
 
+    def __eq__(self, other):
+        return self.start_time == other.start_time and \
+               self.end_time == other.end_time and \
+               self.pitch == other.pitch and \
+               self.chord == other.chord

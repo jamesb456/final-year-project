@@ -3,6 +3,9 @@ import pathlib
 import sys
 import time
 import glob
+import cProfile
+import pstats
+import io
 from typing import Optional
 
 
@@ -47,7 +50,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
     for (index, segment) in enumerate(segments):
         midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
         segment.save_segment(midi_filepath)
-        graph.add_node(midi_filepath)
+        graph.add_identifying_node(midi_filepath)
         graph.add_edge(str(resolved_path), midi_filepath, weight=1)
 
     print("Starting recursive reduction")
@@ -108,6 +111,8 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
 
 
 if __name__ == '__main__':
+    prof = cProfile.Profile()
+    prof.enable()
     parser = argparse.ArgumentParser(description="Split a MIDI file into several segments "
                                                  "so it may be queried for similarity")
     parser.add_argument("midi_paths", nargs="+", type=str, help="Path to MIDI file(s) to segment")
@@ -147,3 +152,9 @@ if __name__ == '__main__':
     else:
         raise ValueError(f"Unrecognised algorithm choice {args.algorithm[0]}")
 
+    prof.disable()
+    s = io.StringIO()
+    sortby = pstats.SortKey.CUMULATIVE
+    ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    print(s.getvalue())

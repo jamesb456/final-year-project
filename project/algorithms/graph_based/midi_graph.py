@@ -21,6 +21,9 @@ class MidiGraph:
     def add_node(self, filepath: str):
         self.__graph.add_node(pathlib.Path(filepath).stem)
 
+    def add_identifying_node(self, filepath: str):
+        self.__graph.add_node(pathlib.Path(filepath).stem, label="original_" + pathlib.Path(filepath).stem )
+
     def add_edge(self, f1: str, f2: str, weight: int = 1):
         self.__graph.add_edge(pathlib.Path(f1).stem, pathlib.Path(f2).stem, label=weight)
 
