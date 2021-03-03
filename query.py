@@ -2,6 +2,7 @@ import argparse
 import pathlib
 
 import networkx
+from networkx.algorithms.shortest_paths.astar import astar_path
 from networkx.drawing.nx_agraph import write_dot
 
 from project.segment.segment import Segment
@@ -13,7 +14,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query the similarity of a MIDI file "
                                                  "to MIDI files already segmented ")
     parser.add_argument("midi_path", type=str, help="Path to query MIDI file")
-
+    parser.add_argument("--write_graphs", action="store_true", help="If set to true, writes the graphs containing "
+                                                                    "the query segment connected to the original, "
+                                                                    "stored graphs.")
     args = parser.parse_args()
     # compute reduction of query midi file first
     query_file = MidiFile(args.midi_path)
@@ -22,25 +25,47 @@ if __name__ == "__main__":
 
     reduced_segments = []
     current_segment = query_segment
+
+    print("Starting by computing reductions for query segment")
     while current_segment.get_number_of_notes() > 1:
         weight, reduced_segment = current_segment.reduce_segment()
         reduced_segments.append((weight, reduced_segment))
         current_segment = reduced_segment
 
     available_dots = pathlib.Path("mid/generated").glob("**/*.dot")
+
+    # for each graph .dot we know about, check the similarity
+    print("\nQuery reduction done, now checking each known graph file.")
     for dot_file in available_dots:
-        s = 0
+        print("\n=====================\nOpening " + str(dot_file) + "\n\n")
         dot: networkx.Graph = networkx.drawing.nx_agraph.read_dot(dot_file)
-        dot.add_node("query")
-        edges_to_add = []
-        nodes_to_add = set()
+        dot.add_node("query")  # add query node to graph so we can compute the shortest path lengths
+        last_node = "query"
+        print("\n=Adding query segment reduction nodes to graph=\n")
+        for i, (edge_weight, reduced_segment) in enumerate(reduced_segments):
+            reduce_name = f"query_reduction_{i + 1}"
+            dot.add_node(reduce_name)
+            dot.add_edge(last_node, reduce_name, label=edge_weight, color="blue")
+            last_node = reduce_name
+
+        original_nodes = []
+        # iterate through each node in the graph of the music piece, adding edges between those nodes and the reductions
+        # we just computed for the query segment
+        print("\nDone adding nodes. Now adding edges between query nodes and original nodes: ")
+        root_name = ""
         for node, node_data in dot.nodes(data=True):
             print("Checking node " + node)
-            if node == "query":
-                pass
-            elif "label" in node_data.keys() and ("original_segment" in node_data["label"] or node_data["label"] == "root"):
-                pass
+            if "query" in node:  # ignore any nodes from the query
+                print("Ignoring node because it came from the query segment")
+            elif "label" in node_data.keys() and ("original_segment" in node_data["label"]):
+                # ignore root or segments from the original song
+                # (but add to a list to query the shortest path for later)
+                original_nodes.append(node)
+            elif "type" in node_data.keys() and node_data["type"] == "root":
+                print("Ignoring the original song's root node")
+                root_name = node
             else:
+                # load the mid at this graph position
                 segment_mid = MidiFile(str(dot_file.parents[0] / (node + ".mid")))
                 melody_track = segment_mid.tracks[0]
                 timeline = get_note_timeline(melody_track)
@@ -48,29 +73,23 @@ if __name__ == "__main__":
                     weight, r_segment = reduced_segments[i]
                     j = 0
                     if r_segment.notes == timeline:
-                        nodes_to_connect = ["query"]
-                        node_weights = [weight]
-                        if i > 0:
-                            for j in range(0, i):
-                                nodes_to_connect.append(f"query_reduction_{j+1}")
-                                node_weights.append(reduced_segments[j][0])
-                        for k in range(len(nodes_to_connect)-1, 0, -1):
-                            nodes_to_add.add(nodes_to_connect[k])
-                            if k == len(nodes_to_connect) - 1:
-                                edges_to_add.append((nodes_to_connect[k], node, node_weights[k]))
-                            else:
-                                edges_to_add.append((nodes_to_connect[k-1], nodes_to_connect[k], node_weights[k]))
-
+                        dot.add_edge(f"query_reduction_{i + 1}", node, label="0", color="blue")
                         pass
-            for node_name in nodes_to_add:
-                dot.add_node(node_name)
 
-            for node_u, node_v, weight in edges_to_add:
-                dot.add_edge(node_u, node_v, label=f"{weight}")
+        print("\nRemoving root node")
+        dot.remove_node(root_name)
 
-        pos = networkx.nx_agraph.graphviz_layout(dot, prog="neato")
-        networkx.draw(dot, pos=pos)
-        write_dot(dot, f"output_{s}.dot")
-        s += 1
+        # we've added the query segment: now we can compute the distance of the shortest path
+        print("\nQuery segment added to graph, now computing similarity:\n")
+        for original_node in original_nodes:
+            try:
+                path = astar_path(dot, "query", original_node)
+                print(f"Shortest path between query and {original_node} is {path}")
+            except networkx.NetworkXNoPath:
+                print(f"No path between {original_node} and query")
 
-
+        if args.write_graphs:
+            print("Writing graph to file")
+            pos = networkx.nx_agraph.graphviz_layout(dot, prog="twopi")
+            networkx.draw(dot, pos=pos)
+            write_dot(dot, f"output_{dot_file.parts[len(dot_file.parts) - 2]}.dot")
