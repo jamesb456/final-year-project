@@ -8,4 +8,5 @@ venv/
 mid/generated/
 /mid/nottingham/
 
+output_*.dot
 error.log

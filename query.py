@@ -2,7 +2,7 @@ import argparse
 import pathlib
 
 import networkx
-from networkx.algorithms.shortest_paths.astar import astar_path
+from networkx.algorithms.shortest_paths.astar import astar_path, astar_path_length
 from networkx.drawing.nx_agraph import write_dot
 
 from project.segment.segment import Segment
@@ -39,6 +39,10 @@ if __name__ == "__main__":
     for dot_file in available_dots:
         print("\n=====================\nOpening " + str(dot_file) + "\n\n")
         dot: networkx.Graph = networkx.drawing.nx_agraph.read_dot(dot_file)
+
+        # due to issue in networkx have to reconvert to a float
+        for u, v, edge in dot.edges(data=True):
+            edge["label"] = float(edge["label"])
         dot.add_node("query")  # add query node to graph so we can compute the shortest path lengths
         last_node = "query"
         print("\n=Adding query segment reduction nodes to graph=\n")
@@ -73,7 +77,7 @@ if __name__ == "__main__":
                     weight, r_segment = reduced_segments[i]
                     j = 0
                     if r_segment.notes == timeline:
-                        dot.add_edge(f"query_reduction_{i + 1}", node, label="0", color="blue")
+                        dot.add_edge(f"query_reduction_{i + 1}", node, label=0, color="blue")
                         pass
 
         print("\nRemoving root node")
@@ -83,13 +87,15 @@ if __name__ == "__main__":
         print("\nQuery segment added to graph, now computing similarity:\n")
         for original_node in original_nodes:
             try:
-                path = astar_path(dot, "query", original_node)
-                print(f"Shortest path between query and {original_node} is {path}")
+                path_length = astar_path_length(dot, "query", original_node, weight="label")
+                path = astar_path(dot, "query", original_node, weight="label")
+                print(f"Shortest path between query and {original_node} has length {path_length}")
+                print(f"It also goes through nodes {path}")
             except networkx.NetworkXNoPath:
                 print(f"No path between {original_node} and query")
 
         if args.write_graphs:
-            print("Writing graph to file")
+            print("=Writing graph to file=")
             pos = networkx.nx_agraph.graphviz_layout(dot, prog="twopi")
             networkx.draw(dot, pos=pos)
             write_dot(dot, f"output_{dot_file.parts[len(dot_file.parts) - 2]}.dot")
