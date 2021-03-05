@@ -17,7 +17,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query the similarity of a MIDI file "
                                                  "to MIDI files already segmented ")
     parser.add_argument("midi_path", type=str, help="Path to query MIDI file")
-    parser.add_argument("--write_graphs", action="store_true", help="If set to true, writes the graphs containing "
+    parser.add_argument("--write_graphs", action="store_true", help="If set, writes the graphs containing "
                                                                     "the query segment connected to the original, "
                                                                     "stored graphs.")
 
@@ -117,8 +117,8 @@ if __name__ == "__main__":
         similarity_dict[str(dot_filepath.parents[0])] = total_path_length / len(original_nodes)  # avg distance between source segments and query segment
 
         if args.write_graphs:
-            print("=Writing graph to file=")
-            pos = networkx.nx_agraph.graphviz_layout(dot, prog="twopi", root="query")
+            print("= --write_graphs: Writing graph to file=")
+            pos = networkx.nx_agraph.graphviz_layout(dot, prog="twopi",root="query")
             networkx.draw(dot, pos=pos)
             write_dot(dot, f"query_output/graphs/{pathlib.Path(args.midi_path).stem}"
                            f"/output_{dot_filepath.parts[len(dot_filepath.parts) - 2]}.dot")

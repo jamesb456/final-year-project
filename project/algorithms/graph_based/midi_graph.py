@@ -39,3 +39,4 @@ class MidiGraph:
         networkx.draw(self.__graph, pos=pos)
         write_dot(self.__graph, filepath)
 
+

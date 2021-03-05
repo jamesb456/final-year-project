@@ -21,7 +21,7 @@ def segment_vector(filepath: str, melody_track: int, chord_track: Optional[int])
     pass
 
 
-def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int]) -> int:
+def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int], save_combined: bool) -> int:
     time_start = time.time()
     resolved_path = pathlib.Path(midi_path)
     segmenter = LbdmSegmenter()
@@ -90,20 +90,20 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
             if seg_ind not in combined_dict.keys():
                 combined_dict[seg_ind] = []
             combined_dict[seg_ind].append(segment)
+    if save_combined:
+        print("--saved_combined specified: saving combined segments...")
+        for (segment_index, indexed_segments) in combined_dict.items():
 
-    print("Saving combined segments...")
-    for (segment_index, indexed_segments) in combined_dict.items():
+            new_file = MidiFile(**indexed_segments[0].get_file_metadata())
+            original_track = new_file.add_track()
+            segments[segment_index].copy_notes_to_track(original_track)
+            for segment in indexed_segments:
+                track = new_file.add_track()
+                segment.copy_notes_to_track(track)
 
-        new_file = MidiFile(**indexed_segments[0].get_file_metadata())
-        original_track = new_file.add_track()
-        segments[segment_index].copy_notes_to_track(original_track)
-        for segment in indexed_segments:
-            track = new_file.add_track()
-            segment.copy_notes_to_track(track)
+            new_file.save(filename=f"{mid_location}/combined_segment_{segment_index}.mid")
+        print("Combined segments saved.")
 
-        new_file.save(filename=f"{mid_location}/combined_segment_{segment_index}.mid")
-
-    print("Segments saved.")
     time_end = time.time()
     print(f"Time elapsed: {time_end - time_start} seconds")
     return 0
@@ -127,6 +127,11 @@ if __name__ == '__main__':
     parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
                                                                       "from python's cProfile module")
 
+    parser.add_argument("--save_combined", action="store_true", help="If set and running the graph algorithm, "
+                                                                     "saves all of the reductions of each segment "
+                                                                     "into one MIDI file (as well as the usual reduced "
+                                                                     "segments normally)")
+
     args = parser.parse_args()
     err_count = 0
     if args.algorithm[0] == "graph":
@@ -142,7 +147,7 @@ if __name__ == '__main__':
             sys.stderr.flush()
 
         for path in paths:
-            result = segment_graph(path, args.melody_track, args.chord_track)
+            result = segment_graph(path, args.melody_track, args.chord_track,args.save_combined)
             if result != 0:
                 err_count += 1
         graph_end = time.time()
