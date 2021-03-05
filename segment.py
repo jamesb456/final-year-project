@@ -51,7 +51,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int])
         midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
         segment.save_segment(midi_filepath)
         graph.add_identifying_node(midi_filepath)
-        graph.add_edge(str(resolved_path), midi_filepath, weight=1)
 
     print("Starting recursive reduction")
 
@@ -125,6 +124,8 @@ if __name__ == '__main__':
                         help="The track the file should be segmented with respect to (default: %(default)s)")
     parser.add_argument("--chord_track", type=int, nargs="?",
                         help="The track containing the chords in the MIDI file (if such a track exists)")
+    parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
+                                                                      "from python's cProfile module")
 
     args = parser.parse_args()
     err_count = 0
@@ -153,8 +154,9 @@ if __name__ == '__main__':
         raise ValueError(f"Unrecognised algorithm choice {args.algorithm[0]}")
 
     prof.disable()
-    s = io.StringIO()
-    sortby = pstats.SortKey.CUMULATIVE
-    ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
-    ps.print_stats()
-    print(s.getvalue())
+    if args.show_profiling:
+        s = io.StringIO()
+        sortby = pstats.SortKey.CUMULATIVE
+        ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        print(s.getvalue())
