@@ -82,7 +82,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     print("Done reducing as all segments have at most 1 note.")
 
     print("Saving graph structure")
-    graph.save_to_file(filepath=f"{mid_location}/graph.dot")
+    graph.save_to_file(filepath=f"{mid_location}/graph.gpickle")
 
     combined_dict = {}
     for (iteration, r_segments) in segment_dict.items():
@@ -145,13 +145,14 @@ if __name__ == '__main__':
         if len(paths) == 0:
             sys.stderr.write("Error: no MIDI files correspond to the path(s) given\n")
             sys.stderr.flush()
-
+        count = 0
         for path in paths:
-            result = segment_graph(path, args.melody_track, args.chord_track,args.save_combined)
+            result = segment_graph(path, args.melody_track, args.chord_track, args.save_combined)
             if result != 0:
                 err_count += 1
+            count += 1
         graph_end = time.time()
-        print(f"\n\nDone segmenting all mid files. Total time taken was {graph_end - graph_start} seconds.")
+        print(f"\n\nDone segmenting all {count} mid files. Total time taken was {graph_end - graph_start} seconds.")
         sys.stderr.write(f"Total unprocessed files due to errors is: {err_count}\n")
     elif args.algorithm[0] == "pitch_vector":
         raise NotImplementedError("Pitch vector algorithm chosen, but this is not implemented yet.")
@@ -164,4 +165,5 @@ if __name__ == '__main__':
         sortby = pstats.SortKey.CUMULATIVE
         ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
         ps.print_stats()
+        ps.dump_stats("segment.stats")
         print(s.getvalue())

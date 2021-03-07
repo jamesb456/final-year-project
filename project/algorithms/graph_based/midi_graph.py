@@ -5,7 +5,7 @@ import networkx
 from typing import Optional
 from mido import MidiFile, MidiTrack
 
-from networkx.drawing.nx_pydot import write_dot
+from networkx.readwrite.gpickle import write_gpickle
 
 
 class MidiGraph:
@@ -17,7 +17,7 @@ class MidiGraph:
         pass
 
     def add_node(self, filepath: str):
-        self.__graph.add_node(pathlib.Path(filepath).stem,shape="box")
+        self.__graph.add_node(pathlib.Path(filepath).stem, shape="box")
 
     def add_identifying_node(self, filepath: str):
         self.__graph.add_node(pathlib.Path(filepath).stem, label="original_" + pathlib.Path(filepath).stem,
@@ -35,8 +35,9 @@ class MidiGraph:
             if "reduction" in node and len(self.__graph.edges([node])) == 1:
                 self.__graph.nodes[node]["type"] = "terminal"
 
-        pos = networkx.nx_agraph.graphviz_layout(self.__graph, prog="twopi")
-        networkx.draw(self.__graph, pos=pos)
-        write_dot(self.__graph, filepath)
+        write_gpickle(self.__graph, filepath)
+        # positions = networkx.nx_agraph.graphviz_layout(self.__graph, prog="twopi") # node positions
+        # networkx.draw(self.__graph, pos=positions)
+        # write_dot(self.__graph, filepath)
 
 

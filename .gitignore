@@ -12,3 +12,4 @@ output_*.dot
 error.log
 /query_output/graphs/
 /query_output/rankings/
+*.stats
