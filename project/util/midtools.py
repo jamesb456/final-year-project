@@ -4,7 +4,6 @@ import sys
 import mido
 import numpy as np
 
-
 from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 

@@ -1,12 +1,15 @@
 from typing import List
 
 import numpy as np
+import matplotlib.pyplot as plt
 from mido import MidiTrack, MidiFile
 
 from project.segment import lbdm
 from project.segment.segmenter import Segmenter
 from project.segment.segment import Segment
 from project.util.midtools import get_note_timeline
+
+
 
 
 class LbdmSegmenter(Segmenter):
@@ -47,6 +50,8 @@ class LbdmSegmenter(Segmenter):
             elif boundary_strength > self.threshold:
                 segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:profile_index[0]+1]))
                 last_segmentation_index = profile_index[0]
+        plt.scatter(range(len(profile)), profile)
+        plt.show()
 
         # get last few notes
         segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:]))
