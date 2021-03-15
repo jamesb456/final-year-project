@@ -5,7 +5,7 @@ import pandas as pd
 from mido import MidiFile
 from networkx import read_gpickle, astar_path_length, write_gpickle
 
-from project.segment.segment import Segment
+from project.core.segment import Segment
 from project.util.midtools import get_note_timeline
 
 
@@ -20,7 +20,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
     query_reduced_segments = []
     current_segment = query_segment
 
-    print("Starting by computing reductions for query segment")
+    print("Starting by computing reductions for query core")
     while current_segment.get_number_of_notes() > 1:
         weight, reduced_segment = current_segment.reduce_segment()
         query_reduced_segments.append((weight, reduced_segment))
@@ -47,7 +47,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
             last_node = reduce_name
         original_nodes = []
         # iterate through each node in the graph of the music piece, adding edges between those nodes and the reductions
-        # we just computed for the query segment
+        # we just computed for the query core
         for node, node_data in dot.nodes(data=True):
             if "query" in node:  # ignore any nodes from the query
                 pass
@@ -88,7 +88,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
                         dot.add_edge(last_node, node, label=non_connected_penalty, color="red")
 
 
-        # we've added the query segment: now we can compute the distance of the shortest path
+        # we've added the query core: now we can compute the distance of the shortest path
         total_path_length = 0
         min_path_length = float('inf')
         for original_node in original_nodes:
@@ -102,10 +102,10 @@ def query_graph(midi_path, use_minimum, write_graphs):
                 print(f"No path between {original_node} and query")
 
         if use_minimum:
-            # avg distance between source segments and query segment
+            # avg distance between source segments and query core
             similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])] = min_path_length
         else:
-            # min distance between source segments and query segment
+            # min distance between source segments and query core
             similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])] = total_path_length / len(
                 original_nodes)
         print(f"Done: {metric} distance was {similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])]}")
@@ -126,9 +126,9 @@ def query_graph(midi_path, use_minimum, write_graphs):
     # series.plot(kind="barh")
     # plt.ylabel("MIDI file")
 
-    # plt.xlabel(f"{metric} distance to query segment")
-    # plt.title(f"{metric} distance between the query segment {pathlib.Path(args.midi_path)} and known MIDI graphs "
+    # plt.xlabel(f"{metric} distance to query core")
+    # plt.title(f"{metric} distance between the query core {pathlib.Path(args.midi_path)} and known MIDI graphs "
     #           f"(Lower is better)")
     # plt.show(block=False)
-    series.rename_axis(f"{metric} segment distance from query segment")
+    series.rename_axis(f"{metric} core distance from query core")
     series.to_csv(f"query_output/rankings/{pathlib.Path(midi_path).stem}.csv")

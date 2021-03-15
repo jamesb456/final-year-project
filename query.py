@@ -3,6 +3,7 @@ import io
 import cProfile
 import pstats
 import time
+import datetime
 
 from project.algorithms.graph_based.query_graph_based import query_graph
 
@@ -15,10 +16,10 @@ if __name__ == "__main__":
                                                  "to MIDI files already segmented ")
     parser.add_argument("midi_path", type=str, help="Path to query MIDI file")
     parser.add_argument("--write_graphs", action="store_true", help="If set, writes the graphs containing "
-                                                                    "the query segment connected to the original, "
+                                                                    "the query core connected to the original, "
                                                                     "stored graphs.")
     parser.add_argument("--use_minimum", action="store_true", help="If set, use the minimum path length between a query"
-                                                                   " segment and segments in the MIDI instead of the "
+                                                                   " core and segments in the MIDI instead of the "
                                                                    "average.")
 
     args = parser.parse_args()
@@ -29,7 +30,8 @@ if __name__ == "__main__":
     sortby = pstats.SortKey.CUMULATIVE
     ps = pstats.Stats(profile, stream=s).sort_stats(sortby)
     ps.print_stats()
-    ps.dump_stats("query.stats")
+    curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
+    ps.dump_stats(f"{curr_time}_query.stats")
     print(s.getvalue())
     end_time = time.time()
     print(f"Total time taken was {end_time - start_time}s.")

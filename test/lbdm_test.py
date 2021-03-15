@@ -2,7 +2,7 @@ import unittest
 
 import mido
 
-import project.segment.lbdm as lbdm
+import project.core.lbdm as lbdm
 from project.util.midtools import get_note_timeline
 
 

@@ -4,12 +4,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mido import MidiTrack, MidiFile
 
-from project.segment import lbdm
-from project.segment.segmenter import Segmenter
-from project.segment.segment import Segment
+from project.core import lbdm
+from project.core.segmenter import Segmenter
+from project.core.segment import Segment
 from project.util.midtools import get_note_timeline
-
-
 
 
 class LbdmSegmenter(Segmenter):
@@ -25,7 +23,7 @@ class LbdmSegmenter(Segmenter):
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[Segment]:
 
-        # determine which track to segment
+        # determine which track to core
         track: MidiTrack = mid.tracks[track_index]
         chord_track = None
 
@@ -50,8 +48,6 @@ class LbdmSegmenter(Segmenter):
             elif boundary_strength > self.threshold:
                 segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:profile_index[0]+1]))
                 last_segmentation_index = profile_index[0]
-        plt.scatter(range(len(profile)), profile)
-        plt.show()
 
         # get last few notes
         segments.append(Segment(mid, track_index, timeline[last_segmentation_index+1:]))

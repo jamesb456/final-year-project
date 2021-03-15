@@ -3,17 +3,17 @@ import pathlib
 from mido import MidiTrack, MidiFile
 
 
-from project.segment.lbdm_segmenter import LbdmSegmenter
+from project.core.lbdm_segmenter import LbdmSegmenter
 from project.visualisation.graph import pitch_time_graph, lbdm_graph
 
 # test for structure:
 
 # general procedure
 
-# 1.) segment each voice / track
-# 2.) reduce each segment
+# 1.) core each voice / track
+# 2.) reduce each core
 # 3.) make links between segments
-# 4.) repeat steps 2-3 until each segment contains one note
+# 4.) repeat steps 2-3 until each core contains one note
 
 
 class GraphAlgorithmTest(unittest.TestCase):

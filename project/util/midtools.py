@@ -8,9 +8,9 @@ from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
 
-from project.segment.chord import Chord
-from project.segment.note import Note
-from project.segment.signature import TimeSignature, KeySignature
+from project.core.chord import Chord
+from project.core.note import Note
+from project.core.signature import TimeSignature, KeySignature
 
 
 def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:

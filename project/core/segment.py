@@ -4,8 +4,8 @@ from collections import deque
 from typing import List, Optional, Tuple, Deque
 
 from mido import MidiFile, MidiTrack, Message
-from project.segment.note import Note
-from project.segment.signature import TimeSignature, KeySignature
+from project.core.note import Note
+from project.core.signature import TimeSignature, KeySignature
 from project.util.midtools import get_track_signatures
 
 
@@ -100,7 +100,7 @@ class Segment:
 
         message_queue = self.__get_melody_instructional_messages()
 
-        # add the list of notes within the segment as Midi messages
+        # add the list of notes within the core as Midi messages
         current_meta_index = 0
         current_time = self.start_time
         for (index, note) in enumerate(self.notes):

@@ -3,7 +3,7 @@ from typing import List
 
 from mido import MidiFile
 
-from project.segment.segment import Segment
+from project.core.segment import Segment
 
 
 class Segmenter(ABC):

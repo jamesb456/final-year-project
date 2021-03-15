@@ -3,8 +3,8 @@ from math import floor
 from typing import Optional, Tuple
 
 import project.util.constants as constants
-from project.segment.chord import Chord
-from project.segment.signature import TimeSignature, KeySignature
+from project.core.chord import Chord
+from project.core.signature import TimeSignature, KeySignature
 
 
 class Note:
