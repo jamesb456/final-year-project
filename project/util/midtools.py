@@ -151,3 +151,4 @@ def get_track_signatures(track: mido.MidiTrack) -> Tuple[List[Tuple[int, TimeSig
         start_time += message.time
 
     return time_signatures, key_signatures
+

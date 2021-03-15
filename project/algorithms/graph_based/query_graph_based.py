@@ -5,7 +5,7 @@ import pandas as pd
 from mido import MidiFile
 from networkx import read_gpickle, astar_path_length, write_gpickle
 
-from project.core.segment import Segment
+from project.core.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 
@@ -15,7 +15,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
     non_connected_penalty = 100
     pathlib.Path(f"query_output/graphs/{pathlib.Path(midi_path).stem}").mkdir(exist_ok=True, parents=True)
     notes = get_note_timeline(query_file.tracks[0])
-    query_segment = Segment(query_file, 0, notes)
+    query_segment = GraphSegment(query_file, 0, notes)
 
     query_reduced_segments = []
     current_segment = query_segment
@@ -86,7 +86,6 @@ def query_graph(midi_path, use_minimum, write_graphs):
                         # add an edge of weight 1 between the last reduction and this node
                         # if it's the last reduced node
                         dot.add_edge(last_node, node, label=non_connected_penalty, color="red")
-
 
         # we've added the query core: now we can compute the distance of the shortest path
         total_path_length = 0

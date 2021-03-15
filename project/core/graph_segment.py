@@ -1,25 +1,25 @@
 import project.util.constants as constants
 
+
 from collections import deque
 from typing import List, Optional, Tuple, Deque
+from abc import ABC
 
 from mido import MidiFile, MidiTrack, Message
+
+from project.core.midi_segment import MidiSegment
 from project.core.note import Note
 from project.core.signature import TimeSignature, KeySignature
 from project.util.midtools import get_track_signatures
 
 
-class Segment:
+class GraphSegment(MidiSegment):
+
     def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note]):
-        self.__file = file  # source track
+        super().__init__(file, melody_track_ind)
         self.notes = notes
-        self.melody_track_ind = melody_track_ind
         # precompute time and key signatures
         self.time_signature_events, self.key_signature_events = get_track_signatures(file.tracks[melody_track_ind])
-
-    @property
-    def __melody_track(self) -> MidiTrack:
-        return self.__file.tracks[self.melody_track_ind]
 
     @property
     def start_time(self) -> Optional[int]:
@@ -35,19 +35,34 @@ class Segment:
         else:
             return None
 
-    @property
-    def ticks_per_beat(self) -> int:
-        return self.__file.ticks_per_beat
+    def copy_notes_to_track(self, track: MidiTrack):
 
-    def __get_melody_instructional_messages(self) -> Deque[Tuple[int, Message]]:
-        time = 0
-        meta_messages = deque()
-        for message in self.__melody_track:
-            if message.is_meta or message.type == "control_change" or message.type == "program_change":
-                meta_messages.append((time + message.time, message))
-            time += message.time
+        message_queue = self._get_melody_instructional_messages()
 
-        return meta_messages
+        # add the list of notes within the core as Midi messages
+        current_meta_index = 0
+        current_time = self.start_time
+        for (index, note) in enumerate(self.notes):
+            # add meta messages at the appropriate time
+            if message_queue[0][0] <= current_time:
+                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
+                    track.append(message_queue.popleft()[1])
+
+            time_since_last_note = note.start_time - self.notes[index - 1].end_time if index != 0 else 0
+            track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
+                                 time=time_since_last_note))
+            current_time += time_since_last_note
+
+            if message_queue[0][0] <= current_time:
+                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
+                    track.append(message_queue.popleft()[1])
+
+            track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
+                                 time=note.duration))  # running status note off
+            current_time += note.duration
+        # add remaining meta messages
+        while len(message_queue) > 0:
+            track.append(message_queue.popleft()[1])
 
     def __get_time_signature_at(self, time: int) -> Tuple[int, TimeSignature]:
         last_time_sig_event = 0, TimeSignature.default()
@@ -87,47 +102,18 @@ class Segment:
 
     def save_segment(self, filepath):
         # create new MidiFile with the same metadata
-        new_file = MidiFile(type=self.__file.type, ticks_per_beat=self.__file.ticks_per_beat,
-                            charset=self.__file.charset,
-                            debug=self.__file.debug, clip=self.__file.clip)
+        new_file = MidiFile(type=self._file.type, ticks_per_beat=self._file.ticks_per_beat,
+                            charset=self._file.charset,
+                            debug=self._file.debug, clip=self._file.clip)
 
         # add all the meta messages (e.g. time signature, instrument)
-        new_track = new_file.add_track(self.__melody_track.name)
+        new_track = new_file.add_track(self._melody_track.name)
         self.copy_notes_to_track(new_track)
         new_file.save(filename=filepath)
 
-    def copy_notes_to_track(self, track: MidiTrack):
-
-        message_queue = self.__get_melody_instructional_messages()
-
-        # add the list of notes within the core as Midi messages
-        current_meta_index = 0
-        current_time = self.start_time
-        for (index, note) in enumerate(self.notes):
-            # add meta messages at the appropriate time
-            if message_queue[0][0] <= current_time:
-                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
-                    track.append(message_queue.popleft()[1])
-
-            time_since_last_note = note.start_time - self.notes[index - 1].end_time if index != 0 else 0
-            track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
-                                 time=time_since_last_note))
-            current_time += time_since_last_note
-
-            if message_queue[0][0] <= current_time:
-                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
-                    track.append(message_queue.popleft()[1])
-
-            track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
-                                 time=note.duration))  # running status note off
-            current_time += note.duration
-        # add remaining meta messages
-        while len(message_queue) > 0:
-            track.append(message_queue.popleft()[1])
-
-    def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'Segment']:
+    def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'GraphSegment']:
         if self.get_number_of_notes() < 2:
-            return 1, Segment(self.__file, self.melody_track_ind, self.notes)
+            return 1, GraphSegment(self._file, self.melody_track_ind, self.notes)
 
         reduced_notes = []
 
@@ -138,7 +124,6 @@ class Segment:
             shortest_note_length = self.find_shortest_note_length()
 
             window_size = shortest_note_length * 2
-
 
         weight = 0
 
@@ -226,18 +211,6 @@ class Segment:
                 # in the paper this is called the *semantic* distance measure
                 weight += ((strongest_total - prev_strongest_total) / 3)
 
-        return weight, Segment(self.__file, self.melody_track_ind, reduced_notes)
+        return weight, GraphSegment(self._file, self.melody_track_ind, reduced_notes)
 
-    def get_file_metadata(self):
-        """
 
-        Returns:
-
-        """
-        return {
-            "type": self.__file.type,
-            "ticks_per_beat": self.__file.ticks_per_beat,
-            "charset": self.__file.charset,
-            "debug": self.__file.debug,
-            "clip": self.__file.clip
-        }
