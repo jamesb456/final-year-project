@@ -1,12 +1,11 @@
 from typing import List
 
 import numpy as np
-import matplotlib.pyplot as plt
 from mido import MidiTrack, MidiFile
 
 from project.core import lbdm
-from project.core.segmenter import Segmenter
-from project.core.graph_segment import GraphSegment
+from project.core.segment.segmenter import Segmenter
+from project.core.segment.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 

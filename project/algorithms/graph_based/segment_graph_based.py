@@ -6,11 +6,13 @@ from typing import Optional
 from mido import MidiFile
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
-from project.core.lbdm_segmenter import LbdmSegmenter
+from project.core.segment.lbdm_segmenter import LbdmSegmenter
+from project.util.midtools import is_note_on, is_note_off
 
 
 def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int], save_combined: bool) -> int:
     time_start = time.time()
+
     resolved_path = pathlib.Path(midi_path)
     segmenter = LbdmSegmenter()
     mid_file = MidiFile(filename=str(resolved_path))
@@ -19,8 +21,8 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
     print("=========================================================")
     for (msg1, msg2) in zip(mid_file.tracks[melody_track][1:], mid_file.tracks[melody_track]):
-        if (msg1.type == "note_on" and msg2.type == "note_on") \
-                or (msg1.type == "note_off" and msg2.type == "note_off"):
+        if (is_note_on(msg1) and is_note_on(msg2)) \
+                or (is_note_off(msg1) and is_note_off(msg2)):
             sys.stderr.write(f"Error for Midi File @ {midi_path}: "
                              f"this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
             sys.stderr.flush()
@@ -29,7 +31,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
 
-    mid_location = f"mid/generated/{mid_name}"
+    mid_location = f"mid/generated/graph/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
     print("Saving original segments to {}...".format(pathlib.Path(mid_location)))
 

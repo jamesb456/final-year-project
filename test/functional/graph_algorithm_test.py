@@ -1,10 +1,9 @@
 import unittest
-import pathlib
-from mido import MidiTrack, MidiFile
+from mido import MidiFile
 
 
-from project.core.lbdm_segmenter import LbdmSegmenter
-from project.visualisation.graph import pitch_time_graph, lbdm_graph
+from project.core.segment.lbdm_segmenter import LbdmSegmenter
+
 
 # test for structure:
 

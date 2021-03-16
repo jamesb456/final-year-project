@@ -5,7 +5,7 @@ import pandas as pd
 from mido import MidiFile
 from networkx import read_gpickle, astar_path_length, write_gpickle
 
-from project.core.graph_segment import GraphSegment
+from project.core.segment.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 
@@ -26,7 +26,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
         query_reduced_segments.append((weight, reduced_segment))
         current_segment = reduced_segment
 
-    available_graphs = pathlib.Path("mid/generated").glob("**/*.gpickle")
+    available_graphs = pathlib.Path("mid/generated/graph").glob("**/*.gpickle")
 
     # for each graph .dot we know about, check the similarity
     print("\nQuery reduction done, now checking each known graph file.")

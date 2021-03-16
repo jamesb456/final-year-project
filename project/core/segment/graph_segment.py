@@ -1,13 +1,8 @@
-import project.util.constants as constants
-
-
-from collections import deque
-from typing import List, Optional, Tuple, Deque
-from abc import ABC
+from typing import List, Optional, Tuple
 
 from mido import MidiFile, MidiTrack, Message
 
-from project.core.midi_segment import MidiSegment
+from project.core.segment.midi_segment import MidiSegment
 from project.core.note import Note
 from project.core.signature import TimeSignature, KeySignature
 from project.util.midtools import get_track_signatures

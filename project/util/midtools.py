@@ -8,9 +8,18 @@ from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
 
+
 from project.core.chord import Chord
 from project.core.note import Note
 from project.core.signature import TimeSignature, KeySignature
+
+
+def is_note_off(msg: mido.Message) -> bool:
+    return msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0)
+
+
+def is_note_on(msg: mido.Message) -> bool:
+    return msg.type == "note_off" and msg.velocity > 0
 
 
 def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
@@ -91,7 +100,8 @@ def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[Chord, int, in
     return chords
 
 
-def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrack] = None) -> List[Note]:
+def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrack] = None) \
+        -> List[Note]:
     """
     Returns a list of notes derived from the messages within the MIDI track. The data stored within each note is
     1. The start time of the note (in ticks)
@@ -103,7 +113,6 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
     Args:
         track: A track from a MIDI file
         chord_track: A track containing what chords were played in the midi file.
-
     Returns:
         A list of notes derived from the messages in the MIDI track .
 
