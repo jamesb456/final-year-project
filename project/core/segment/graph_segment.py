@@ -95,16 +95,17 @@ class GraphSegment(MidiSegment):
         """
         return [note for note in self.notes if (range_start <= note.start_time < range_start + range_length)]
 
-    def save_segment(self, filepath):
+    def save_as_midi(self, filepath):
         # create new MidiFile with the same metadata
-        new_file = MidiFile(type=self._file.type, ticks_per_beat=self._file.ticks_per_beat,
-                            charset=self._file.charset,
-                            debug=self._file.debug, clip=self._file.clip)
+        new_file = MidiFile(**self.get_file_metadata())
 
         # add all the meta messages (e.g. time signature, instrument)
         new_track = new_file.add_track(self._melody_track.name)
         self.copy_notes_to_track(new_track)
         new_file.save(filename=filepath)
+
+    def save_segment(self, filepath):
+        pass
 
     def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'GraphSegment']:
         if self.get_number_of_notes() < 2:

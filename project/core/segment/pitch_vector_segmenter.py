@@ -1,12 +1,13 @@
+import numpy as np
+
 from functools import reduce
 from typing import List
 
-from mido import MidiFile, MidiTrack, tempo2bpm
-
-
+from mido import MidiFile, MidiTrack, tempo2bpm, bpm2tempo, tick2second
+from collections import deque
 from project.core.segment.pitch_vector_segment import PitchVectorSegment
 from project.core.segment.segmenter import Segmenter
-from project.util.midtools import get_note_timeline
+from project.util.midtools import get_note_timeline, get_track_tempo_changes, is_note_on
 
 
 class PitchVectorSegmenter(Segmenter):
@@ -15,8 +16,67 @@ class PitchVectorSegmenter(Segmenter):
         self.observations = observations
         super().__init__()
 
+    @staticmethod
+    def __normalize_pv(pv_arr: np.ndarray) -> float:
+        mean_pitch = np.mean(pv_arr)
+        pv_arr -= mean_pitch
+        return mean_pitch
+
+    @staticmethod
+    def __get_observations(track: MidiTrack, start_index: int, num_obs: int, window_size: float,
+                           tempo: int, ticks_per_beat: int) -> np.ndarray:
+        time_to_advance = window_size / (num_obs - 1)
+        pv_arr = np.empty(20, dtype=float)
+
+        current_delta = track[start_index].time
+        current_index = start_index
+        current_tempo = tempo
+        # derive current time from j? current_time = j * (window_size / (num_obs - 1))
+        # current msg time = prev message times + tick2second(msg.time,ticks_per_beat,tempo)
+        # if current msg time <= current time position is according to j
+        #  check what the message is: if tempo, update the tempo
+        #                             if note on, update the pitch
+        # else do nothing
+        # current msg time += this msg time
+        for j in range(num_obs):
+            max_time_delta = j * time_to_advance
+            for message in track[current_index:]:
+                msg_length = tick2second(message.time, ticks_per_beat, tempo)
+                if current_delta + msg_length > max_time_delta:
+                    break
+                else:
+                    current_delta += msg_length
+                    current_index += 1
+                    if message.type == "set_tempo":
+                        current_tempo = message.tempo
+                    elif is_note_on(message):
+                        pv_arr[j:] = message.note  # default is that the last note playing for all notes after this
+                        # is this note
+                        # (i.e. if there's no note on since the last detected one thats what note is playing)
+                    elif message.type == "end_of_track":
+                        return np.empty(0)  # don't extract if pitch vector exceeds end of song
+
+        return pv_arr
+
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[PitchVectorSegment]:
         track: MidiTrack = mid.tracks[track_index]
-        
+        tempo_changes = get_track_tempo_changes(track)
+        pitch_vector_segments = []
+        delta_t = 0
+        tempo = bpm2tempo(120)
 
-        return []
+        for i, msg in enumerate(track):
+            delta_t += tick2second(msg.time, mid.ticks_per_beat, tempo)
+            if is_note_on(msg):
+                pv_arr = self.__get_observations(track, i, self.observations, self.window_size, tempo,
+                                                 mid.ticks_per_beat)
+                if len(pv_arr) == 0:
+                    break
+                pitch_modifier = self.__normalize_pv(pv_arr)  # normalize to have mean of 0
+                start_offset = delta_t
+                pitch_vector_segments.append(PitchVectorSegment(mid, track_index, pv_arr, self.window_size,
+                                                                self.observations, pitch_modifier, start_offset))
+            elif msg.type == "set_tempo":
+                tempo = msg.tempo
+
+        return pitch_vector_segments

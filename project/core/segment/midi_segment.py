@@ -44,20 +44,14 @@ class MidiSegment(ABC):
             "clip": self._file.clip
         }
 
-    @property
-    @abstractmethod
-    def start_time(self) -> Optional[int]:
-        pass
-
-    @property
-    @abstractmethod
-    def end_time(self) -> Optional[int]:
-        pass
-
     @abstractmethod
     def copy_notes_to_track(self, track: MidiTrack):
         pass
 
     @abstractmethod
     def save_segment(self, filepath):
+        pass
+
+    @abstractmethod
+    def save_as_midi(self, filepath):
         pass

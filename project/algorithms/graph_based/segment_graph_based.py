@@ -39,7 +39,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
 
     for (index, segment) in enumerate(segments):
         midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
-        segment.save_segment(midi_filepath)
+        segment.save_as_midi(midi_filepath)
         graph.add_identifying_node(midi_filepath)
 
     print("Starting recursive reduction")
@@ -57,7 +57,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
                 weight, reduced_segment = segment.reduce_segment()
                 reduced_filepath = str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"))
                 reduced_segments.append((seg_ind, reduced_segment))
-                reduced_segment.save_segment(filepath=reduced_filepath)
+                reduced_segment.save_as_midi(filepath=reduced_filepath)
                 graph.add_node(filepath=reduced_filepath)
                 if i > 1:
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid")),

@@ -8,7 +8,6 @@ from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
 
-
 from project.core.chord import Chord
 from project.core.note import Note
 from project.core.signature import TimeSignature, KeySignature
@@ -19,7 +18,7 @@ def is_note_off(msg: mido.Message) -> bool:
 
 
 def is_note_on(msg: mido.Message) -> bool:
-    return msg.type == "note_off" and msg.velocity > 0
+    return msg.type == "note_on" and msg.velocity > 0
 
 
 def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
@@ -144,7 +143,7 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
     return notes
 
 
-def get_track_signatures(track: mido.MidiTrack) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
+def get_track_signatures(track: List) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
     time_signatures = []
     key_signatures = []
     start_time = 0
@@ -161,3 +160,13 @@ def get_track_signatures(track: mido.MidiTrack) -> Tuple[List[Tuple[int, TimeSig
 
     return time_signatures, key_signatures
 
+
+def get_track_tempo_changes(track: List) -> List[Tuple[int,int]]:
+    time = 0
+    tempo_changes = []
+    for message in track:
+        time += message.time
+        if message.type == "set_tempo":
+            tempo_changes.append((message.time, message.tempo))
+
+    return tempo_changes
