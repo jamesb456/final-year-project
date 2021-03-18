@@ -14,7 +14,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
     pathlib.Path(f"query_output/graphs/{pathlib.Path(midi_path).stem}").mkdir(exist_ok=True, parents=True)
-    notes = get_note_timeline(query_file.tracks[0])
+    notes = get_note_timeline(query_file.tracks[0])  # TODO: change to use arbitrary track index
     query_segment = GraphSegment(query_file, 0, notes)
 
     query_reduced_segments = []

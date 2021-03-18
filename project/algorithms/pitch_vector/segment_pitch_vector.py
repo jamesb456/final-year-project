@@ -1,10 +1,12 @@
 import pathlib
+import pickle
 import time
 
 from typing import Optional
 
 from mido import MidiFile
 
+from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
 from project.core.segment.pitch_vector_segmenter import PitchVectorSegmenter
 
 
@@ -21,7 +23,10 @@ def segment_pitch_vector(midi_path: str, melody_track: int, window_size: float =
     segments = segmenter.create_segments(mid_file, melody_track)
     mid_location = f"mid/generated/pitch_vector/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
-    for i, segment in enumerate(segments):
-        segment.save_segment(f"{mid_location}/pitch_vector_{i}.pickle")
+    pv_collection = PitchVectorCollection(mid_file, segments, window_size, num_observations)
+    with open(f"{mid_location}/pitch_vectors.pickle", "wb") as file:
+        pickle.dump(pv_collection, file)
     time_end = time.time()
+    print(f"Done. Created {len(segments)} vectors ( window size of {window_size}s with {num_observations} dimensions)")
+    print(f"It took {time_end - time_start} seconds")
     return 0

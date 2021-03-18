@@ -39,6 +39,7 @@ class PitchVectorSegmenter(Segmenter):
         # else do nothing
         # current msg time += this msg time
         for j in range(num_obs):
+            note_observed = False
             max_time_delta = j * time_to_advance
             for message in track[current_index:]:
                 msg_length = tick2second(message.time, ticks_per_beat, tempo)
@@ -53,7 +54,12 @@ class PitchVectorSegmenter(Segmenter):
                         pv_arr[j:] = message.note  # default is that the last note playing for all notes after this
                         # is this note
                         # (i.e. if there's no note on since the last detected one thats what note is playing)
+                        note_observed = True
                     elif message.type == "end_of_track":
+                        if j == num_obs - 1 and current_delta == max_time_delta:
+                            break  # end of track but not exceeding it (so if the vector goes right to the end
+                            # that's fine, but any further is not
+
                         return np.empty(0)  # don't extract if pitch vector exceeds end of song
 
         return pv_arr
@@ -74,8 +80,7 @@ class PitchVectorSegmenter(Segmenter):
                     break
                 pitch_modifier = self.__normalize_pv(pv_arr)  # normalize to have mean of 0
                 start_offset = delta_t
-                pitch_vector_segments.append(PitchVectorSegment(mid, track_index, pv_arr, self.window_size,
-                                                                self.observations, pitch_modifier, start_offset))
+                pitch_vector_segments.append(PitchVectorSegment(mid, track_index, pv_arr, pitch_modifier, start_offset))
             elif msg.type == "set_tempo":
                 tempo = msg.tempo
 
