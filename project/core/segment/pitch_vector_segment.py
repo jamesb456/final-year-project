@@ -1,5 +1,5 @@
 import numpy as np
-
+import pickle
 from typing import Optional
 
 from mido import MidiTrack, MidiFile
@@ -21,13 +21,20 @@ class PitchVectorSegment(MidiSegment):
     def copy_notes_to_track(self, track: MidiTrack):
         pass
 
-    def save_segment(self, filepath):
+    def save_segment(self, filepath: str):
+        with open(filepath, 'wb') as f:
+            pickle.dump(self, f)
+
+    def save_as_midi(self, filepath: str):
         pass
 
-    def save_as_midi(self, filepath):
-        pass
+    def get_non_normalized_arr(self) -> np.ndarray:
+        return self.pitch_vector + self.pitch_modifier
 
-    def __repr__(self):
+    def __str__(self):
         return f"window_size = {self.window_size} observations = {self.observations} " \
                f"pitch_modifier = {self.pitch_modifier} start_offset = {self.start_offset}\n" \
                f"pv = {str(self.pitch_vector)}"
+
+    def __repr__(self):
+        return self.__str__()

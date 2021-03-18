@@ -19,6 +19,9 @@ def segment_pitch_vector(midi_path: str, melody_track: int, window_size: float =
     print("=========================================================")
 
     segments = segmenter.create_segments(mid_file, melody_track)
-
+    mid_location = f"mid/generated/pitch_vector/{mid_name}"
+    pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
+    for i, segment in enumerate(segments):
+        segment.save_segment(f"{mid_location}/pitch_vector_{i}.pickle")
     time_end = time.time()
     return 0

@@ -87,7 +87,7 @@ if __name__ == '__main__':
         ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
         ps.print_stats()
         curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
-        ps.dump_stats(f"{curr_time}_segment.stats")
+        ps.dump_stats(f"{curr_time}_segment_{args.algorithm[0]}.stats")
         print(s.getvalue())
 
         print(f"\nSaved these stats to {curr_time}_segment.stats.")
