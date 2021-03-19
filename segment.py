@@ -29,13 +29,17 @@ if __name__ == '__main__':
     parser.add_argument("--chord_track", type=int, nargs="?",
                         help="The track containing the chords in the MIDI file (if such a track exists) (only "
                              "relevant for the graph based algorithm)")
+    parser.add_argument("--n_processes", type=int, default=1,
+                        help="The number of processes that should be used to segment the music (segmenting one MIDI "
+                             "file per process) (default: %(default)s)")
     parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
-                                                                      "from python's cProfile module")
+                                                                      "from python's cProfile module "
+                                                                      "(default: %(default)s)")
 
     parser.add_argument("--save_combined", action="store_true", help="If set and running the graph algorithm, "
                                                                      "saves all of the reductions of each core "
                                                                      "into one MIDI file (as well as the usual reduced "
-                                                                     "segments normally)")
+                                                                     "segments normally) (default: %(default)s)")
 
     args = parser.parse_args()
     err_count = 0
@@ -55,7 +59,7 @@ if __name__ == '__main__':
         graph_start = time.time()
         graph_func = partial(segment_graph, melody_track=args.melody_track, chord_track=args.chord_track,
                              save_combined=args.save_combined)
-        with Pool(4) as p:
+        with Pool(args.n_processes) as p:
             errors = p.map(graph_func, paths)
         for error in errors:
             if error != 0:
@@ -69,7 +73,7 @@ if __name__ == '__main__':
         vector_start = time.time()
         pitch_func = partial(segment_pitch_vector, melody_track=args.melody_track)
 
-        with Pool(4) as p:
+        with Pool(args.n_processes) as p:
             errors = p.map(pitch_func, paths)
         for error in errors:
             if error != 0:
