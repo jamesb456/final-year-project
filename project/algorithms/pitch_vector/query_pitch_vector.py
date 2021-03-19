@@ -6,14 +6,14 @@ import numpy as np
 import pandas as pd
 
 from collections import defaultdict, OrderedDict
-
+from typing import Dict
 from mido import MidiFile
 
 from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
 from project.core.segment.pitch_vector_segmenter import PitchVectorSegmenter
 
 
-def query_pitch_vector(midi_path: str):
+def query_pitch_vector(midi_path: str) -> Dict[str, float]:
     # build up database of pitch vectors
     # then segment the query based on the different window sizes and observations
     # in the database
@@ -60,3 +60,4 @@ def query_pitch_vector(midi_path: str):
         for index, (mid_name, similarity) in enumerate(sorted_dict.items()):
             print(f"\t[{len(similarity_map.items()) - index}] {mid_name}: {similarity}")
 
+        return sorted_dict

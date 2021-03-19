@@ -42,7 +42,7 @@ if __name__ == "__main__":
     ps = pstats.Stats(profile, stream=s).sort_stats(sortby)
     ps.print_stats()
     curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
-    ps.dump_stats(f"{curr_time}_query.stats")
+    ps.dump_stats(f"stats/{curr_time}_query.stats")
     print(s.getvalue())
     end_time = time.time()
     print(f"Total time taken was {end_time - start_time}s.")

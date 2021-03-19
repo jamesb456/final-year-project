@@ -1,0 +1,24 @@
+syntax="proto3";
+service QueryHandler{
+  rpc QueryGraph(GraphArgs) returns (QueryResponse);
+  rpc QueryPitchVector(VectorArgs) returns (QueryResponse);
+}
+
+message GraphArgs{
+  string query_mid = 1;
+  bool use_minimum = 2;
+  int32 melody_track = 3;
+  int32 chord_track = 4;
+
+}
+
+message VectorArgs{
+  string query_mid = 1;
+  int32 melody_track = 2;
+}
+
+message QueryResponse{
+  map<string, double> ranking = 1;
+  double query_time = 2;
+}
+

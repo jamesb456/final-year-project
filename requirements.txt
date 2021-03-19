@@ -6,3 +6,5 @@ pydot
 pygraphviz
 cython
 pandas
+grpcio
+grpcio-tools
