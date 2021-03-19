@@ -6,7 +6,9 @@ import glob
 import cProfile
 import pstats
 import io
+from functools import partial
 from typing import Optional
+from multiprocessing import Pool
 
 from project.algorithms.graph_based.segment_graph_based import segment_graph
 from project.algorithms.pitch_vector.segment_pitch_vector import segment_pitch_vector
@@ -51,10 +53,12 @@ if __name__ == '__main__':
 
     if args.algorithm[0] == "graph":
         graph_start = time.time()
-
-        for path in paths:
-            result = segment_graph(path, args.melody_track, args.chord_track, args.save_combined)
-            if result != 0:
+        graph_func = partial(segment_graph, melody_track=args.melody_track, chord_track=args.chord_track,
+                             save_combined=args.save_combined)
+        with Pool(4) as p:
+            errors = p.map(graph_func, paths)
+        for error in errors:
+            if error != 0:
                 err_count += 1
             count += 1
 
@@ -63,10 +67,12 @@ if __name__ == '__main__':
 
     elif args.algorithm[0] == "pitch_vector":
         vector_start = time.time()
+        pitch_func = partial(segment_pitch_vector, melody_track=args.melody_track)
 
-        for path in paths:
-            result = segment_pitch_vector(path, args.melody_track)
-            if result != 0:
+        with Pool(4) as p:
+            errors = p.map(pitch_func, paths)
+        for error in errors:
+            if error != 0:
                 err_count += 1
             count += 1
 
