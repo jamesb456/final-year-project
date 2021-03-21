@@ -5,8 +5,10 @@ import pstats
 import time
 import datetime
 
+from project.algorithms.graph_based.midi_graph import create_dataset_graph
 from project.algorithms.graph_based.query_graph_based import query_graph
 from project.algorithms.pitch_vector.query_pitch_vector import query_pitch_vector
+from project.algorithms.pitch_vector.pitch_vector_collection import create_dataset_pv
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -32,9 +34,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.algorithm[0] == "graph":
-        query_graph(args.midi_path, args.use_minimum, args.write_graphs)
+        print("Graph algorithm chosen: initialising dataset")
+        graphs = create_dataset_graph()
+        print("Done. Querying starting...")
+        query_graph(args.midi_path, args.use_minimum, args.write_graphs, graphs)
     elif args.algorithm[0] == "pitch_vector":
-        query_pitch_vector(args.midi_path)
+        print("Pitch Vector algorithm chosen: initialising dataset")
+        pv_collections = create_dataset_pv()
+        print("Done. Querying starting...")
+        query_pitch_vector(args.midi_path, pv_collections)
 
     profile.disable()
     s = io.StringIO()

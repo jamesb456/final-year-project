@@ -6,29 +6,23 @@ import numpy as np
 import pandas as pd
 
 from collections import defaultdict, OrderedDict
-from typing import Dict
+from typing import Dict, Tuple, List
 from mido import MidiFile
+from tqdm import tqdm
 
 from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
 from project.core.segment.pitch_vector_segmenter import PitchVectorSegmenter
 
 
-def query_pitch_vector(midi_path: str) -> Dict[str, float]:
+def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[PitchVectorCollection]],
+                       melody_track: int = 0) -> Dict[str, float]:
     # build up database of pitch vectors
     # then segment the query based on the different window sizes and observations
     # in the database
-    vector_map = defaultdict(list)
+
     query_mid = MidiFile(midi_path)
-    available_mids = pathlib.Path("mid/generated/pitch_vector").glob("**/*.pickle")
-    print("Building up database of pitch vector collections (representing each midi file)")
-    num_vectors = 0
-    for mid in available_mids:
-        with open(mid, "rb") as fh:
-            pv_collection: PitchVectorCollection = pickle.load(fh)
-        num_vectors += len(pv_collection.vectors)
-        vector_map[(pv_collection.window_size, pv_collection.observations)].append(pv_collection)
-    print(f"Done: number of vectors in database is: {num_vectors}")
-    print("now compare the query segment with the these vectors")
+
+    print("Compare the query segment with the these vectors")
 
     for (window_size, observations), pv_collections in vector_map.items():
 
@@ -36,12 +30,12 @@ def query_pitch_vector(midi_path: str) -> Dict[str, float]:
 
         segmenter = PitchVectorSegmenter(window_size, observations)  # use window size and observations specific to
                                                                      # these mids
-        query_segments = segmenter.create_segments(query_mid, 0)  # TODO: change to use arbitrary track index
+        query_segments = segmenter.create_segments(query_mid, melody_track)  # TODO: change to use arbitrary track index
         # TODO: this needs to change! songs not necessarily in the same tempo
         # TODO: see in paper about window size modifiers
         similarity_map = {}
-        for pv_collection in pv_collections:
-            print(f"Checking vectors from {pv_collection.mid_file.filename}.")
+        for pv_collection in tqdm(pv_collections, desc=f"{pathlib.Path(midi_path).stem} Progress"):
+            # print(f"Checking vectors from {pv_collection.mid_file.filename}.")
             for i, pv in enumerate(pv_collection.vectors):
                 sim = 0
                 for query_segment in query_segments:

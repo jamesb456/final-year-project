@@ -1,15 +1,18 @@
 import pathlib
+from typing import List
 
 import networkx
 import pandas as pd
 from mido import MidiFile
 from networkx import read_gpickle, astar_path_length, write_gpickle
+from tqdm import tqdm
 
+from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.core.segment.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 
-def query_graph(midi_path, use_minimum, write_graphs):
+def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: List[MidiGraph]):
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
@@ -20,55 +23,55 @@ def query_graph(midi_path, use_minimum, write_graphs):
     query_reduced_segments = []
     current_segment = query_segment
 
-    print("Starting by computing reductions for query core")
+    # print("Starting by computing reductions for query segment")
     while current_segment.get_number_of_notes() > 1:
         weight, reduced_segment = current_segment.reduce_segment()
         query_reduced_segments.append((weight, reduced_segment))
         current_segment = reduced_segment
 
-    available_graphs = pathlib.Path("mid/generated/graph").glob("**/*.gpickle")
-
-    # for each graph .dot we know about, check the similarity
-    print("\nQuery reduction done, now checking each known graph file.")
+    # for each graph file we know about, check the similarity
+    # print("\nQuery reduction done, now checking each known graph file.")
     similarity_dict = {}
-    for graph_filepath in available_graphs:
-        print("\n=====================\nOpening " + str(graph_filepath) + " for querying \n")
-        dot: networkx.Graph = read_gpickle(graph_filepath)
+    prog_bar = tqdm(graphs, desc=f"{pathlib.Path(midi_path).stem} Progress")
+    for midi_graph in prog_bar:
+        # get a copy of the graph
+        graph = midi_graph.get_copy_of_graph()
+        source_mid_path = graph.nodes["root"]["source"]
+        prog_bar.set_postfix({"current_graph": pathlib.Path(source_mid_path).stem})
+        # print("\n=====================\nOpening graph for " + source_mid_path + " for querying \n")
 
         # due to issue in networkx have to reconvert to a float
-        for u, v, edge in dot.edges(data=True):
+        for u, v, edge in graph.edges(data=True):
             edge["label"] = float(edge["label"])
-        dot.add_node("query")  # add query node to graph so we can compute the shortest path lengths
+        graph.add_node("query")  # add query node to graph so we can compute the shortest path lengths
         last_node = "query"
         for i, (edge_weight, reduced_segment) in enumerate(query_reduced_segments):
             reduce_name = f"query_reduction_{i + 1}"
-            dot.add_node(reduce_name)
-            dot.add_edge(last_node, reduce_name, label=edge_weight, color="blue")
+            graph.add_node(reduce_name)
+            graph.add_edge(last_node, reduce_name, label=edge_weight, color="blue")
             last_node = reduce_name
         original_nodes = []
         # iterate through each node in the graph of the music piece, adding edges between those nodes and the reductions
         # we just computed for the query core
-        for node, node_data in dot.nodes(data=True):
-            if "query" in node:  # ignore any nodes from the query
+        for node, node_data in graph.nodes(data=True):
+            if "query" in node or node == "root":  # ignore any nodes from the query or the root node
                 pass
             else:
                 if "label" in node_data.keys() and ("original_segment" in node_data["label"]):
                     original_nodes.append(node)
 
                 # load the mid at this graph position
-                segment_mid = MidiFile(str(graph_filepath.parents[0] / (node + ".mid")))
-                segment_melody_track = segment_mid.tracks[0]
-                segment_timeline = get_note_timeline(segment_melody_track)
+                segment_timeline = node_data["notes"]
                 if query_segment.notes == segment_timeline:
                     # dot.add_edge("query", node, label=0, color="blue")
                     continue
                 else:
                     if len(segment_timeline) == 1:
                         if len(query_reduced_segments) > 0:
-                            dot.add_edge(f"query_reduction_{len(query_reduced_segments)}", node,
-                                         label=non_connected_penalty, color="red")
+                            graph.add_edge(f"query_reduction_{len(query_reduced_segments)}", node,
+                                           label=non_connected_penalty, color="red")
                         else:
-                            dot.add_edge("query", node, label=non_connected_penalty, color="red")
+                            graph.add_edge("query", node, label=non_connected_penalty, color="red")
                         continue
 
                     last_node = "query"
@@ -76,7 +79,7 @@ def query_graph(midi_path, use_minimum, write_graphs):
                         _, r_segment = query_reduced_segments[i]
                         j = 0
                         if r_segment.notes == segment_timeline:
-                            dot.add_edge(f"query_reduction_{i + 1}", node, label=0, color="blue")
+                            graph.add_edge(f"query_reduction_{i + 1}", node, label=0, color="blue")
                             last_node = f"query_reduction_{i + 1}"
                             break
                         last_node = f"query_reduction_{i + 1}"
@@ -85,14 +88,14 @@ def query_graph(midi_path, use_minimum, write_graphs):
                         # if there are no matching reductions
                         # add an edge of weight 1 between the last reduction and this node
                         # if it's the last reduced node
-                        dot.add_edge(last_node, node, label=non_connected_penalty, color="red")
+                        graph.add_edge(last_node, node, label=non_connected_penalty, color="red")
 
         # we've added the query core: now we can compute the distance of the shortest path
         total_path_length = 0
         min_path_length = float('inf')
         for original_node in original_nodes:
             try:
-                path_length = astar_path_length(dot, "query", original_node, weight="label")  #
+                path_length = astar_path_length(graph, "query", original_node, weight="label")  #
                 total_path_length += path_length
                 min_path_length = min(min_path_length, path_length)
             except networkx.NetworkXNoPath:
@@ -102,19 +105,18 @@ def query_graph(midi_path, use_minimum, write_graphs):
 
         if use_minimum:
             # avg distance between source segments and query core
-            similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])] = min_path_length
+            similarity_dict[source_mid_path] = min_path_length
         else:
             # min distance between source segments and query core
-            similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])] = total_path_length / len(
+            similarity_dict[source_mid_path] = total_path_length / len(
                 original_nodes)
-        print(f"Done: {metric} distance was {similarity_dict[str(graph_filepath.parts[len(graph_filepath.parts) - 2])]}")
+        #  print(f"Done: {metric} distance was {similarity_dict[source_mid_path]}")
         if write_graphs:
-            print("= --write_graphs: Writing graph to file=")
-            write_gpickle(dot, f"query_output/graphs/{pathlib.Path(midi_path).stem}"
-                               f"/output_{graph_filepath.parts[len(graph_filepath.parts) - 2]}.gpickle")
+            #  print("= --write_graphs: Writing graph to file=")
+            write_gpickle(graph, f"query_output/graphs/{pathlib.Path(midi_path).stem}"
+                                 f"/output_{source_mid_path}.gpickle")
 
     print("\nDone: Final similarity rankings (least to most similar): ")
-
     sorted_dict = {k: v for k, v in sorted(similarity_dict.items(), key=lambda item: item[1], reverse=True)}
     series = pd.Series(sorted_dict)
 

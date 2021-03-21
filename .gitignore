@@ -6,6 +6,8 @@ __pycache__
 
 venv/
 mid/generated/
+mid/open-wikifonia-leadsheets
+mid/owld-midi
 /mid/nottingham/
 
 output_*.dot

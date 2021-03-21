@@ -8,3 +8,4 @@ cython
 pandas
 grpcio
 grpcio-tools
+tqdm
