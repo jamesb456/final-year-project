@@ -34,8 +34,10 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[
         # TODO: this needs to change! songs not necessarily in the same tempo
         # TODO: see in paper about window size modifiers
         similarity_map = {}
-        for pv_collection in tqdm(pv_collections, desc=f"{pathlib.Path(midi_path).stem} Progress"):
+        prog_bar = tqdm(pv_collections, desc=f"Pitch Vector: {pathlib.Path(midi_path).stem} Progress")  # wrap iterable in progress bar
+        for pv_collection in prog_bar:
             # print(f"Checking vectors from {pv_collection.mid_file.filename}.")
+            prog_bar.set_postfix({"current_vectors": pathlib.Path(pv_collection.mid_file.filename).stem})
             for i, pv in enumerate(pv_collection.vectors):
                 sim = 0
                 for query_segment in query_segments:

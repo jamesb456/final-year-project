@@ -32,7 +32,7 @@ def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: L
     # for each graph file we know about, check the similarity
     # print("\nQuery reduction done, now checking each known graph file.")
     similarity_dict = {}
-    prog_bar = tqdm(graphs, desc=f"{pathlib.Path(midi_path).stem} Progress")
+    prog_bar = tqdm(graphs, desc=f"Graph Algorithm: {pathlib.Path(midi_path).stem} Progress")
     for midi_graph in prog_bar:
         # get a copy of the graph
         graph = midi_graph.get_copy_of_graph()

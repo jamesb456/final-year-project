@@ -17,4 +17,16 @@ if __name__ == '__main__':
     print(f"The time to query (on the servers end) was \n(pitch vector) {response_vec.query_time}s\n"
           f"(graph) {response_graph.query_time}s")
 
-    print(f"Rankings: Vector {response_vec.ranking}\n{response_graph.ranking} ")
+    df_vec = pd.DataFrame(list(response_vec.ranking.items()), columns=["MIDI name", "Similarity"])
+    df_graph = pd.DataFrame(list(response_graph.ranking.items()), columns=["MIDI name", "Similarity"])
+
+    top20_vec = df_vec.tail(20)
+    top20_graph = df_graph.tail(20)
+    print(list(top20_vec.items()))
+    print(list(top20_graph.items()))
+
+    top20_vec.plot(x="MIDI name", kind="barh",
+                   title=f"Top 20 most similar songs to {query} using the pitch vector method (lower is better)")
+    top20_graph.plot(x="MIDI name", kind="barh",
+                     title=f"Top 20 most similar songs to {query} using the graph method (lower is better)")
+    plt.show()
