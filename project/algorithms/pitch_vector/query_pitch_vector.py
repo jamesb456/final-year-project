@@ -50,7 +50,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[
 
         sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1], reverse=True)}
         series = pd.Series(sorted_dict)
-        series.to_csv("query_output/rankings/test.csv")
+        series.to_csv(f"query_output/rankings/test.csv")
         for index, (mid_name, similarity) in enumerate(sorted_dict.items()):
             print(f"\t[{len(similarity_map.items()) - index}] {mid_name}: {similarity}")
 

@@ -133,3 +133,4 @@ def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: L
     # plt.show(block=False)
     series.rename_axis(f"{metric} core distance from query core")
     series.to_csv(f"query_output/rankings/{pathlib.Path(midi_path).stem}.csv")
+    return sorted_dict

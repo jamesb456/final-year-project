@@ -1,5 +1,6 @@
 import grpc
-
+import pandas as pd
+import matplotlib.pyplot as plt
 from project.server.query_handler_pb2_grpc import QueryHandlerStub
 from project.server.query_handler_pb2 import VectorArgs, GraphArgs
 if __name__ == '__main__':
@@ -16,4 +17,4 @@ if __name__ == '__main__':
     print(f"The time to query (on the servers end) was \n(pitch vector) {response_vec.query_time}s\n"
           f"(graph) {response_graph.query_time}s")
 
-    print(f"Rankings: Vector {response_vec.ranking}\n{response_vec.ranking} ")
+    print(f"Rankings: Vector {response_vec.ranking}\n{response_graph.ranking} ")
