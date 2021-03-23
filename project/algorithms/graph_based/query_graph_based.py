@@ -4,11 +4,11 @@ from typing import List
 import networkx
 import pandas as pd
 from mido import MidiFile
-from networkx import read_gpickle, astar_path_length, write_gpickle
+from networkx import astar_path_length, write_gpickle
 from tqdm import tqdm
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
-from project.core.segment.graph_segment import GraphSegment
+from project.algorithms.graph_based.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 

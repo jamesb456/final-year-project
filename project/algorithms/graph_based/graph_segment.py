@@ -2,9 +2,9 @@ from typing import List, Optional, Tuple
 
 from mido import MidiFile, MidiTrack, Message
 
-from project.core.segment.midi_segment import MidiSegment
-from project.core.note import Note
-from project.core.signature import TimeSignature, KeySignature
+from project.algorithms.core.midi_segment import MidiSegment
+from project.algorithms.graph_based.note import Note
+from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 from project.util.midtools import get_track_signatures
 
 

@@ -1,20 +1,13 @@
-import pathlib
-import pickle
-
-
-import numpy as np
 import pandas as pd
 
-from collections import defaultdict, OrderedDict
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple
 from mido import MidiFile
-from tqdm import tqdm
+from nearpy import Engine
 
-from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
-from project.core.segment.pitch_vector_segmenter import PitchVectorSegmenter
+from project.algorithms.pitch_vector.pitch_vector_segmenter import PitchVectorSegmenter
 
 
-def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[PitchVectorCollection]],
+def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engine],
                        melody_track: int = 0) -> Dict[str, float]:
     # build up database of pitch vectors
     # then segment the query based on the different window sizes and observations
@@ -24,7 +17,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[
 
     print("Compare the query segment with the these vectors")
 
-    for (window_size, observations), pv_collections in vector_map.items():
+    for (window_size, observations), engine in vector_map.items():
 
         # segment the query song
 
@@ -34,21 +27,9 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], List[
         # TODO: this needs to change! songs not necessarily in the same tempo
         # TODO: see in paper about window size modifiers
         similarity_map = {}
-        prog_bar = tqdm(pv_collections, desc=f"Pitch Vector: {pathlib.Path(midi_path).stem} Progress")  # wrap iterable in progress bar
-        for pv_collection in prog_bar:
-            # print(f"Checking vectors from {pv_collection.mid_file.filename}.")
-            prog_bar.set_postfix({"current_vectors": pathlib.Path(pv_collection.mid_file.filename).stem})
-            for i, pv in enumerate(pv_collection.vectors):
-                sim = 0
-                for query_segment in query_segments:
-                    similarity = np.linalg.norm(query_segment.pitch_vector - pv.pitch_vector)
-                    sim += similarity
-                sim /= len(query_segments)  # mean similarity for THIS pitch vector
-                if pv_collection.mid_file.filename not in similarity_map:
-                    similarity_map[pv_collection.mid_file.filename] = sim
-                else:
-                    similarity_map[pv_collection.mid_file.filename] \
-                        = min(sim, similarity_map[pv_collection.mid_file.filename])
+        for query_segment in query_segments:
+            neighbours = engine.neighbours(query_segment.pitch_vector)
+            print(neighbours)
 
         sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1], reverse=True)}
         series = pd.Series(sorted_dict)

@@ -9,3 +9,4 @@ pandas
 grpcio
 grpcio-tools
 tqdm
+nearpy

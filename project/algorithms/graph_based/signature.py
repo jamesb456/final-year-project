@@ -1,5 +1,6 @@
 import project.util.constants as constants
 
+
 class TimeSignature:
     def __init__(self, numerator: int, denominator: int):
         self.numerator = numerator

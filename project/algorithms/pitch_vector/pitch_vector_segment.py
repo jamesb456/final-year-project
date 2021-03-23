@@ -1,10 +1,9 @@
 import numpy as np
 import pickle
-from typing import Optional
 
 from mido import MidiTrack, MidiFile
 
-from project.core.segment.midi_segment import MidiSegment
+from project.algorithms.core.midi_segment import MidiSegment
 
 
 class PitchVectorSegment(MidiSegment):

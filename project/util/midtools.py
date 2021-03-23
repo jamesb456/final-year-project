@@ -1,16 +1,12 @@
-import math
-import sys
-
 import mido
-import numpy as np
 
 from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
 
-from project.core.chord import Chord
-from project.core.note import Note
-from project.core.signature import TimeSignature, KeySignature
+from project.algorithms.graph_based.chord import Chord
+from project.algorithms.graph_based.note import Note
+from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 
 def is_note_off(msg: mido.Message) -> bool:

@@ -2,12 +2,10 @@ import pathlib
 import pickle
 import time
 
-from typing import Optional
-
 from mido import MidiFile
 
 from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
-from project.core.segment.pitch_vector_segmenter import PitchVectorSegmenter
+from project.algorithms.pitch_vector.pitch_vector_segmenter import PitchVectorSegmenter
 
 
 def segment_pitch_vector(midi_path: str, melody_track: int, window_size: float = 3.0, num_observations: int = 20) -> int:

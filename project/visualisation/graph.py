@@ -5,7 +5,7 @@ import mido
 import numpy as np
 
 from project.util.midtools import  get_type_tally, get_note_tally, get_note_timeline
-from project.core.lbdm import lbdm
+from project.algorithms.graph_based.lbdm import lbdm
 
 
 def view_midi_information():

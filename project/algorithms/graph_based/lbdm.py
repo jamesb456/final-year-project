@@ -1,7 +1,7 @@
 from typing import Callable, Tuple, List
 import numpy as np
 
-from project.core.note import Note
+from project.algorithms.graph_based.note import Note
 
 
 def default_change(x1: int, x2: int) -> float:

@@ -1,10 +1,8 @@
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import List, Optional, Deque, Tuple
+from typing import Deque, Tuple
 
 from mido import MidiFile, MidiTrack, Message
-
-from project.core.note import Note
 
 
 class MidiSegment(ABC):

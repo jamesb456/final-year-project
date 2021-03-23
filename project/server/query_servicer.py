@@ -11,17 +11,17 @@ from project.algorithms.pitch_vector.pitch_vector_collection import create_datas
 
 class QueryServicer(query_handler_pb2_grpc.QueryHandlerServicer):
     def __init__(self):
-        print("Initialising Server: Loading Graph Dataset")
-        graph_dataset_start = time.time()
-        self.graph_dataset = create_dataset_graph()
-        graph_dataset_end = time.time()
-        print(f"Graph dataset loaded. It took {graph_dataset_end - graph_dataset_start}s")
-
         print("Initialising Pitch Vector Dataset")
         pv_dataset_start = time.time()
         self.vector_dataset = create_dataset_pv()
         pv_dataset_end = time.time()
         print(f"Vector dataset loaded. It took {pv_dataset_end - pv_dataset_start}s")
+
+        print("Loading Graph Dataset")
+        graph_dataset_start = time.time()
+        self.graph_dataset = create_dataset_graph()
+        graph_dataset_end = time.time()
+        print(f"Graph dataset loaded. It took {graph_dataset_end - graph_dataset_start}s")
 
     def QueryGraph(self, request, context):
         time_start = time.time()

@@ -1,10 +1,10 @@
 import sys
 from math import floor
-from typing import Optional, Tuple
+from typing import Optional
 
 import project.util.constants as constants
-from project.core.chord import Chord
-from project.core.signature import TimeSignature, KeySignature
+from project.algorithms.graph_based.chord import Chord
+from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 
 class Note:

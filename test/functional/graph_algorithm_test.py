@@ -2,7 +2,7 @@ import unittest
 from mido import MidiFile
 
 
-from project.core.segment.lbdm_segmenter import LbdmSegmenter
+from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 
 
 # test for structure:

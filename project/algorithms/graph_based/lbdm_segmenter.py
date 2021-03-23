@@ -3,9 +3,9 @@ from typing import List
 import numpy as np
 from mido import MidiTrack, MidiFile
 
-from project.core import lbdm
-from project.core.segment.segmenter import Segmenter
-from project.core.segment.graph_segment import GraphSegment
+from project.algorithms.graph_based import lbdm
+from project.algorithms.core.segmenter import Segmenter
+from project.algorithms.graph_based.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 
