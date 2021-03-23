@@ -2,13 +2,12 @@ import pathlib
 
 import networkx
 
-from typing import Optional, List
-from mido import MidiFile, MidiTrack
+from typing import Optional
+from mido import MidiFile
 
 from project.util.midtools import get_note_timeline
 
 from networkx.readwrite.gpickle import write_gpickle, read_gpickle
-from tqdm import tqdm
 
 
 class MidiGraph:
@@ -64,12 +63,3 @@ class MidiGraph:
         return mid_graph
 
 
-def create_dataset_graph() -> List[MidiGraph]:
-    available_graphs = list(pathlib.Path("mid/generated/graph").glob("**/*.gpickle"))
-    graphs = []
-    for gpickle in tqdm(available_graphs):
-        graph = MidiGraph.from_gpickle(str(gpickle))
-        graph.load_notes_for_segments(str(pathlib.Path(gpickle).parents[0]))
-        graphs.append(graph)
-
-    return graphs

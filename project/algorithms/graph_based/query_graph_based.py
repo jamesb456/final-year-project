@@ -1,5 +1,5 @@
 import pathlib
-from typing import List
+from typing import List, Dict
 
 import networkx
 import pandas as pd
@@ -12,7 +12,7 @@ from project.algorithms.graph_based.graph_segment import GraphSegment
 from project.util.midtools import get_note_timeline
 
 
-def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: List[MidiGraph]):
+def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: List[MidiGraph]) -> Dict[str, float]:
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
@@ -36,8 +36,8 @@ def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: L
     for midi_graph in prog_bar:
         # get a copy of the graph
         graph = midi_graph.get_copy_of_graph()
-        source_mid_path = graph.nodes["root"]["source"]
-        prog_bar.set_postfix({"current_graph": pathlib.Path(source_mid_path).stem})
+        source_mid_path = str(pathlib.Path(graph.nodes["root"]["source"]).stem)
+        prog_bar.set_postfix({"current_graph": source_mid_path})
         # print("\n=====================\nOpening graph for " + source_mid_path + " for querying \n")
 
         # due to issue in networkx have to reconvert to a float

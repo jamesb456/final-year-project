@@ -5,10 +5,9 @@ import pstats
 import time
 import datetime
 
-from project.algorithms.graph_based.midi_graph import create_dataset_graph
 from project.algorithms.graph_based.query_graph_based import query_graph
 from project.algorithms.pitch_vector.query_pitch_vector import query_pitch_vector
-from project.algorithms.pitch_vector.pitch_vector_collection import create_dataset_pv
+from project.algorithms.create_datasets import create_dataset_pv, create_dataset_graph
 
 if __name__ == "__main__":
     start_time = time.time()
