@@ -2,7 +2,7 @@ import sys
 from math import floor
 from typing import Optional
 
-import project.util.constants as constants
+import project.algorithms.core.constants as constants
 from project.algorithms.graph_based.chord import Chord
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 

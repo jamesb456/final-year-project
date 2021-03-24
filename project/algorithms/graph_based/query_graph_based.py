@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.graph_based.graph_segment import GraphSegment
-from project.util.midtools import get_note_timeline
+from project.algorithms.core.midtools import get_note_timeline
 
 
 def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: List[MidiGraph]) -> Dict[str, float]:

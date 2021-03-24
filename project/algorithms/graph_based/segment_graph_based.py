@@ -7,7 +7,7 @@ from mido import MidiFile
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
-from project.util.midtools import is_note_on, is_note_off
+from project.algorithms.core.midtools import is_note_on, is_note_off
 
 
 def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int], save_combined: bool) -> int:

@@ -3,9 +3,9 @@ from typing import List, Optional, Tuple
 from mido import MidiFile, MidiTrack, Message
 
 from project.algorithms.core.midi_segment import MidiSegment
-from project.algorithms.graph_based.note import Note
+from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
-from project.util.midtools import get_track_signatures
+from project.algorithms.core.midtools import get_track_signatures
 
 
 class GraphSegment(MidiSegment):

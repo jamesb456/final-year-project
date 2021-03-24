@@ -4,7 +4,7 @@ import matplotlib.ticker as ticker
 import mido
 import numpy as np
 
-from project.util.midtools import  get_type_tally, get_note_tally, get_note_timeline
+from project.algorithms.core.midtools import  get_type_tally, get_note_tally, get_note_timeline
 from project.algorithms.graph_based.lbdm import lbdm
 
 

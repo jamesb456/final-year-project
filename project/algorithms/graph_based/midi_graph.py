@@ -5,7 +5,7 @@ import networkx
 from typing import Optional
 from mido import MidiFile
 
-from project.util.midtools import get_note_timeline
+from project.algorithms.core.midtools import get_note_timeline
 
 from networkx.readwrite.gpickle import write_gpickle, read_gpickle
 

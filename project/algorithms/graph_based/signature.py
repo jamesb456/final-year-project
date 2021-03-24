@@ -1,4 +1,4 @@
-import project.util.constants as constants
+import project.algorithms.core.constants as constants
 
 
 class TimeSignature:

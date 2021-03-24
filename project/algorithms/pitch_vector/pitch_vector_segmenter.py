@@ -5,7 +5,7 @@ from typing import List
 from mido import MidiFile, MidiTrack, bpm2tempo, tick2second
 from project.algorithms.pitch_vector.pitch_vector_segment import PitchVectorSegment
 from project.algorithms.core.segmenter import Segmenter
-from project.util.midtools import get_track_tempo_changes, is_note_on
+from project.algorithms.core.midtools import get_track_tempo_changes, is_note_on
 
 
 class PitchVectorSegmenter(Segmenter):

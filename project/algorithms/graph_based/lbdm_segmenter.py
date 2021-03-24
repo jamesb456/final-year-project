@@ -6,7 +6,7 @@ from mido import MidiTrack, MidiFile
 from project.algorithms.graph_based import lbdm
 from project.algorithms.core.segmenter import Segmenter
 from project.algorithms.graph_based.graph_segment import GraphSegment
-from project.util.midtools import get_note_timeline
+from project.algorithms.core.midtools import get_note_timeline
 
 
 class LbdmSegmenter(Segmenter):

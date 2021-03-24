@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 
 from project.algorithms.graph_based.chord import Chord
-from project.algorithms.graph_based.note import Note
+from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 

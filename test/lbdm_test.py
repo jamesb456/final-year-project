@@ -3,7 +3,7 @@ import unittest
 import mido
 
 import project.algorithms.graph_based.lbdm as lbdm
-from project.util.midtools import get_note_timeline
+from project.algorithms.core.midtools import get_note_timeline
 
 
 class LbdmTest(unittest.TestCase):
