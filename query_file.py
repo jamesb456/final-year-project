@@ -30,6 +30,9 @@ if __name__ == "__main__":
                                                                    " core and segments in the MIDI instead of the "
                                                                    "average (this only is relevant for the "
                                                                    "graph based algorithm)")
+    parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
+                                                                      "from python's cProfile module "
+                                                                      "(default: %(default)s)")
 
     args = parser.parse_args()
     if args.algorithm[0] == "graph":
@@ -43,6 +46,9 @@ if __name__ == "__main__":
         print("Done. Querying starting...")
         query_pitch_vector(args.midi_path, pv_collections)
 
+    end_time = time.time()
+    print(f"Total time taken was {end_time - start_time}s.")
+
     profile.disable()
     s = io.StringIO()
     sortby = pstats.SortKey.CUMULATIVE
@@ -50,6 +56,5 @@ if __name__ == "__main__":
     ps.print_stats()
     curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
     ps.dump_stats(f"stats/{curr_time}_query.stats")
-    print(s.getvalue())
-    end_time = time.time()
-    print(f"Total time taken was {end_time - start_time}s.")
+    if args.show_profiling:
+        print(s.getvalue())

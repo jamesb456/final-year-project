@@ -3,21 +3,22 @@ import mido
 from typing import Dict, List, Tuple, Optional
 from collections import OrderedDict
 
+from mido import MidiTrack, MidiFile, Message, bpm2tempo, tick2second
 
 from project.algorithms.graph_based.chord import Chord
 from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 
-def is_note_off(msg: mido.Message) -> bool:
+def is_note_off(msg: Message) -> bool:
     return msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0)
 
 
-def is_note_on(msg: mido.Message) -> bool:
+def is_note_on(msg: Message) -> bool:
     return msg.type == "note_on" and msg.velocity > 0
 
 
-def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
+def get_note_tally(mid: MidiFile) -> Dict[int, int]:
     """Returns a dictionary containing the occurrence of each note in the MIDI file.
 
 
@@ -42,7 +43,7 @@ def get_note_tally(mid: mido.MidiFile) -> Dict[int, int]:
     return note_dict
 
 
-def get_type_tally(mid: mido.MidiFile) -> Dict[str, int]:
+def get_type_tally(mid: MidiFile) -> Dict[str, int]:
     """Returns a dictionary containing the occurrence of each message type in the MIDI file.
 
 
@@ -64,7 +65,38 @@ def get_type_tally(mid: mido.MidiFile) -> Dict[str, int]:
     return type_dict
 
 
-def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[Chord, int, int]]:
+def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[int, int]:
+    start_offset = 0
+    tempo = bpm2tempo(120)
+    first_note_on_ind = 0
+    for i, message in enumerate(track):
+        start_offset += tick2second(message.time, ticks_per_beat, tempo)
+        if is_note_on(message):
+            first_note_on_ind = i
+            break
+        elif message.type == "set_tempo":
+            tempo = message.tempo
+
+    return start_offset, first_note_on_ind
+
+
+def get_end_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[int, int]:
+    tempo = bpm2tempo(120)
+    end_offset = 0
+    last_note_off = 0
+    last_note_off_ind = 0
+    for i, message in enumerate(track):
+        end_offset += tick2second(message.time, ticks_per_beat, tempo)
+        if is_note_off(message):
+            last_note_off = end_offset
+            last_note_off_ind = i
+        elif message.type == "set_tempo":
+            tempo = message.tempo
+
+    return last_note_off, last_note_off_ind
+
+
+def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
     chords = []
     on_dict = OrderedDict()
     # off_dict = defaultdict(list)
@@ -95,7 +127,7 @@ def get_chord_timeline(chord_track: mido.MidiTrack) -> List[Tuple[Chord, int, in
     return chords
 
 
-def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrack] = None) \
+def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = None) \
         -> List[Note]:
     """
     Returns a list of notes derived from the messages within the MIDI track. The data stored within each note is
@@ -139,7 +171,7 @@ def get_note_timeline(track: mido.MidiTrack, chord_track: Optional[mido.MidiTrac
     return notes
 
 
-def get_track_signatures(track: List) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
+def get_track_signatures(track: MidiTrack) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
     time_signatures = []
     key_signatures = []
     start_time = 0
@@ -157,12 +189,12 @@ def get_track_signatures(track: List) -> Tuple[List[Tuple[int, TimeSignature]], 
     return time_signatures, key_signatures
 
 
-def get_track_tempo_changes(track: List) -> List[Tuple[int,int]]:
+def get_track_tempo_changes(track: MidiTrack) -> List[Tuple[int, int]]:
     time = 0
     tempo_changes = []
     for message in track:
         time += message.time
         if message.type == "set_tempo":
-            tempo_changes.append((message.time, message.tempo))
+            tempo_changes.append((time, message.tempo))
 
     return tempo_changes

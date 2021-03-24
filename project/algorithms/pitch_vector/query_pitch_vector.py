@@ -6,11 +6,12 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, Tuple
-from mido import MidiFile
+from mido import MidiFile, tick2second
 from nearpy import Engine
 
 from project.algorithms.pitch_vector.pitch_vector_segmenter import PitchVectorSegmenter
 from project.algorithms.pitch_vector.vector_candidate import VectorCandidate
+from project.algorithms.core.midtools import get_start_offset, get_end_offset
 
 
 def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engine],
@@ -20,8 +21,10 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     # in the database
 
     query_mid = MidiFile(midi_path)
-
+    query_start, start_index = get_start_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
+    query_end, end_index = get_end_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
     print("Compare the query segment with the database of vectors")
+
     similarity_map = defaultdict(lambda: 0)
 
     for (window_size, observations), engine in vector_map.items():
@@ -41,10 +44,13 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
                     candidates.append(VectorCandidate(query_segment.start_offset, modifier, cand_offset,
                                                       mid_name))
 
-        print(f"number of candidates is {len(candidates)}")
-        curr_time = time.strftime("%Y%m%d_%I%M%S")
-        with open(f"{curr_time}_candidates.json", "w") as fh:
-            json.dump(list(map(lambda c: c.__dict__, candidates)), fh)
+        print(f"Number of candidates is {len(candidates)}")
+
+        for candidate in candidates:
+            print(f"{candidate} approx bounds = {candidate.get_candidate_segment_bounds(query_start, query_end)}")
+        # curr_time = time.strftime("%Y%m%d_%I%M%S")
+        # with open(f"{curr_time}_candidates.json", "w") as fh:
+        #     json.dump(list(map(lambda c: c.__dict__, candidates)), fh)
 
     sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1])}
     series = pd.Series(sorted_dict)

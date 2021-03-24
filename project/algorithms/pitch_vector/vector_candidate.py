@@ -18,5 +18,5 @@ class VectorCandidate:
         return self.__repr__()
 
     def __repr__(self):
-        return f"query_offset {self.query_offset} window_mod {self.window_modifier} " \
-               f"cand_offset {self.candidate_offset} song_ident {self.song_ident}"
+        return f"song_ident {self.song_ident} query_offset {self.query_offset} " \
+               f"window_mod {self.window_modifier} cand_offset {self.candidate_offset}"
