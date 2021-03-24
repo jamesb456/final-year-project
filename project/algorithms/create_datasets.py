@@ -23,9 +23,9 @@ def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
         pv_spec = (pv_collection.window_size, pv_collection.observations)
         if pv_spec not in vector_map:
             vector_map[pv_spec] = Engine(pv_spec[1])  # i.e observations = dimensions
+
         for i, vector in enumerate(pv_collection.vectors):
-            mid_name = pathlib.Path(pv_collection.mid_file.filename).stem
-            vector_map[pv_spec].store_vector(vector.pitch_vector, (mid_name, vector.start_offset, vector.pitch_modifier))
+            vector_map[pv_spec].store_vector(vector.pitch_vector, (pv_collection.mid_file, vector.start_offset, vector.pitch_modifier))
 
     print(f"Done: number of vectors in database is: {num_vectors}")
     return vector_map

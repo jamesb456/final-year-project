@@ -21,7 +21,7 @@ def segment_pitch_vector(midi_path: str, melody_track: int, window_size: float =
     segments = segmenter.create_segments(mid_file, melody_track)
     mid_location = f"mid/generated/pitch_vector/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
-    pv_collection = PitchVectorCollection(mid_file, segments, window_size, num_observations)
+    pv_collection = PitchVectorCollection(mid_file, segments, window_size, num_observations, melody_track)
     with open(f"{mid_location}/pitch_vectors.pickle", "wb") as file:
         pickle.dump(pv_collection, file)
     time_end = time.time()

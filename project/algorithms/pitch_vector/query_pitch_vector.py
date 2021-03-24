@@ -23,6 +23,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     query_mid = MidiFile(midi_path)
     query_start, start_index = get_start_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
     query_end, end_index = get_end_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
+
     print("Compare the query segment with the database of vectors")
 
     similarity_map = defaultdict(lambda: 0)

@@ -17,7 +17,7 @@ class Note:
 
     """
 
-    def __init__(self, start: int, end: int, pitch: int, channel: int = 0, chord: Optional[Chord] = None,
+    def __init__(self, start: float, end: float, pitch: float, channel: int = 0, chord: Optional[Chord] = None,
                  start_message_index: Optional[int] = None, end_message_index: Optional[int] = None):
         self.start_time = start
         self.end_time = end
@@ -26,9 +26,12 @@ class Note:
         self.chord = chord
         self.start_message_index = start_message_index
         self.end_message_index = end_message_index
+        self.pitch_constant = 0
+        self.duration_constant = 1
+        self.offset_constant = 0
 
     @property
-    def duration(self) -> int:
+    def duration(self) -> float:
         return self.end_time - self.start_time
 
     def get_metric_strength(self, ticks_per_beat: int, time_signature: TimeSignature,
@@ -69,6 +72,15 @@ class Note:
             return 0.5
         else:
             return constants.FUNCTIONAL_SCORE_DICT[abs(key_signature.note - self.chord.root_tone)]
+
+    def normalize(self, mean_pitch: float, start_offset: int, sequence_length: int):
+        self.pitch -= mean_pitch
+        self.start_time = (self.start_time - start_offset) / sequence_length
+        self.end_time = (self.end_time - start_offset) / sequence_length
+
+        self.pitch_constant = mean_pitch
+        self.duration_constant = sequence_length
+        self.offset_constant = start_offset
 
     def str(self):
         return self.__str__()

@@ -5,10 +5,12 @@ from project.algorithms.pitch_vector.pitch_vector_segment import PitchVectorSegm
 
 
 class PitchVectorCollection:
-    def __init__(self, mid_file: MidiFile, vectors: List[PitchVectorSegment], window_size: float, observations: int):
+    def __init__(self, mid_file: MidiFile, vectors: List[PitchVectorSegment], window_size: float, observations: int,
+                 melody_track: int):
         self.vectors = vectors
         self.mid_file = mid_file
         self.window_size = window_size
         self.observations = observations
+        self.melody_track = melody_track
 
 
