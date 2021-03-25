@@ -64,7 +64,6 @@ class PitchVectorSegmenter(Segmenter):
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[PitchVectorSegment]:
         track: MidiTrack = mid.tracks[track_index]
-        tempo_changes = get_track_tempo_changes(track)
         pitch_vector_segments = []
         delta_t = 0
         tempo = bpm2tempo(120)

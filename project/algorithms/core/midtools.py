@@ -1,3 +1,6 @@
+"""
+Common operation on MIDI files and objects
+"""
 import mido
 
 from typing import Dict, List, Tuple, Optional
@@ -26,8 +29,8 @@ def get_note_tally(mid: MidiFile) -> Dict[int, int]:
         mid (mido.MidiFile): The midi object to be analysed.
 
     Returns:
-        Dict[int,int]: A dictionary with the keys being the MIDI note numbers (0 to 127), and the values being the number of occurences of
-        the particular MIDI note.
+        Dict[int,int]: A dictionary with the keys being the MIDI note numbers (0 to 127), and the values being the
+        number of occurences of the particular MIDI note.
     """
 
     note_dict = {}
@@ -104,11 +107,11 @@ def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
     last_note_off_time = 0
     for i in range(len(chord_track)):
         curr_time += chord_track[i].time
-        if chord_track[i].type == "note_on" and chord_track[i].velocity != 0:
+        if is_note_on(chord_track[i]):
             if curr_time not in on_dict.keys():
                 on_dict[curr_time] = []
             on_dict[curr_time].append(chord_track[i].note)
-        elif chord_track[i].type == "note_off" or (chord_track[i].type == "note_on" and chord_track[i].velocity == 0):
+        elif is_note_off(chord_track[i]):
             last_note_off_time = curr_time
             # off_dict[curr_time].append(chord_track[i].note)
 
@@ -127,8 +130,8 @@ def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
     return chords
 
 
-def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = None) \
-        -> List[Note]:
+def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = None,
+                      start_time: Optional[int] = None, end_time: Optional[int] = None) -> List[Note]:
     """
     Returns a list of notes derived from the messages within the MIDI track. The data stored within each note is
     1. The start time of the note (in ticks)
@@ -140,25 +143,26 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
     Args:
         track: A track from a MIDI file
         chord_track: A track containing what chords were played in the midi file.
+        start_time: The time at which to begin looking for notes
     Returns:
         A list of notes derived from the messages in the MIDI track .
 
     """
     notes = []
     last_note_dict = {}
-    curr_time = 0
-    for i in range(len(track)):            
-        if track[i].type == "note_on" and track[i].velocity != 0:
+    curr_ticks = 0
+    for i in range(len(track)):
+        if is_note_on(track[i]):
             # start of new note being played
-            notes.append(Note(curr_time + track[i].time, -1, track[i].note, track[i].channel, None, i, None))
+            notes.append(Note(curr_ticks + track[i].time, -1, track[i].note, track[i].channel, None, i, None))
             last_note_dict[track[i].note] = len(notes) - 1
-        elif track[i].type == "note_off" or (track[i].type == "note_on" and track[i].velocity == 0):
+        elif is_note_off(track[i]):
             # note off (inc note on "running status")
             # naive: assume the previous note_on message was the one this note_off corresponds to
             # (not necessarily the case in polyphonic music)
-            notes[last_note_dict[track[i].note]].end_time = curr_time + track[i].time  # set the last note's end time
+            notes[last_note_dict[track[i].note]].end_time = curr_ticks + track[i].time  # set the last note's end time
             notes[last_note_dict[track[i].note]].end_message_index = i
-        curr_time += track[i].time
+        curr_ticks += track[i].time
 
     if chord_track is not None:
         chord_timeline = get_chord_timeline(chord_track)
@@ -171,7 +175,60 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
     return notes
 
 
+def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
+                            start: float = 0, end: float = float("inf")) -> List[Note]:
+    """
+    Return all notes within the time (in seconds) range [start,end]
+
+    Args:
+        track: MidiTrack to get notes from
+        ticks_per_beat: the number of Midi message "ticks" per quarter note
+        start: The beginning of the time range (default: 0)
+        end:  The end of the time range (default: inf (to the end of the track))
+
+    Returns:
+        A list of notes in the time range [start,end]
+
+    """
+    notes = []
+    last_note_dict = {}
+    curr_time = 0
+    curr_tempo = bpm2tempo(120)
+    for msg in track:
+        curr_time += tick2second(msg.time, ticks_per_beat, curr_tempo)
+        if msg.type == "set_tempo":
+            curr_tempo = msg.tempo
+
+        if curr_time < start:
+            continue
+        elif curr_time > end:
+            break
+        elif is_note_on(msg):
+            notes.append(Note(curr_time, -1, msg.note, msg.channel))
+            last_note_dict[msg.note] = len(notes) - 1
+        elif is_note_off(msg):
+            if msg.note in last_note_dict.keys():
+                notes[last_note_dict[msg.note]].end_time = curr_time  # set the last note's end time
+            else:
+                notes.append(Note(start, curr_time, msg.note, msg.channel))
+                # Say note starts at beginning of time window
+    if len(notes) > 0:  # limit note end to end of time period
+        if notes[-1].end_time == -1:
+            notes[-1].end_time = curr_time
+
+    return notes
+
+
 def get_track_signatures(track: MidiTrack) -> Tuple[List[Tuple[int, TimeSignature]], List[Tuple[int, KeySignature]]]:
+    """
+    Returns a list of key and time signatures in the MIDI track, and their positions within the track (in ticks)
+
+    Args:
+        track: The Midi track to check
+
+    Returns:
+        A Tuple of lists containing pairs of (time, signature) for both time and key signatures
+    """
     time_signatures = []
     key_signatures = []
     start_time = 0
