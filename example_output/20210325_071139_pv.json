@@ -1,0 +1,87 @@
+{
+    "query_file": "mid/generated/graph/ashover8/segment_0.mid",
+    "algorithm": "pitch_vector",
+    "query_time": 0.31549501419067383,
+    "results": {
+        "0": {
+            "MIDI name": "ashover8",
+            "Similarity": 3.6033057851239705
+        },
+        "1": {
+            "MIDI name": "jigs180",
+            "Similarity": 16.81818181818191
+        },
+        "2": {
+            "MIDI name": "jigs50",
+            "Similarity": 33.86495996900836
+        },
+        "3": {
+            "MIDI name": "reelsd-g35",
+            "Similarity": 36.818181818181785
+        },
+        "4": {
+            "MIDI name": "jigs290",
+            "Similarity": 37.66167355371912
+        },
+        "5": {
+            "MIDI name": "xmas13",
+            "Similarity": 41.180165289256294
+        },
+        "6": {
+            "MIDI name": "jigs281",
+            "Similarity": 45.08264462809917
+        },
+        "7": {
+            "MIDI name": "ashover45",
+            "Similarity": 45.300096928884926
+        },
+        "8": {
+            "MIDI name": "jigs33",
+            "Similarity": 49.71430211202939
+        },
+        "9": {
+            "MIDI name": "jigs268",
+            "Similarity": 52.680568309356445
+        },
+        "10": {
+            "MIDI name": "jigs58",
+            "Similarity": 52.96340023612757
+        },
+        "11": {
+            "MIDI name": "reelsu-z23",
+            "Similarity": 54.52657483930215
+        },
+        "12": {
+            "MIDI name": "playford3",
+            "Similarity": 56.14233241505971
+        },
+        "13": {
+            "MIDI name": "jigs321",
+            "Similarity": 56.9504132231407
+        },
+        "14": {
+            "MIDI name": "reelsd-g83",
+            "Similarity": 60.15363636363643
+        },
+        "15": {
+            "MIDI name": "jigs88",
+            "Similarity": 60.67768595041323
+        },
+        "16": {
+            "MIDI name": "jigs199",
+            "Similarity": 62.2066115702479
+        },
+        "17": {
+            "MIDI name": "hpps46",
+            "Similarity": 65.20752984389355
+        },
+        "18": {
+            "MIDI name": "reelsr-t46",
+            "Similarity": 65.4457708397103
+        },
+        "19": {
+            "MIDI name": "hpps44",
+            "Similarity": 65.84108126721725
+        }
+    }
+}
