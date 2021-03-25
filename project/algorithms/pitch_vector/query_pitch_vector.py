@@ -1,3 +1,4 @@
+import pathlib
 import time
 from collections import defaultdict, OrderedDict
 
@@ -8,10 +9,13 @@ import pandas as pd
 from typing import Dict, Tuple
 from mido import MidiFile, tick2second
 from nearpy import Engine
+from tqdm import tqdm
 
 from project.algorithms.pitch_vector.pitch_vector_segmenter import PitchVectorSegmenter
+from project.algorithms.pitch_vector.recursive_alignment import recursive_alignment
 from project.algorithms.pitch_vector.vector_candidate import VectorCandidate
-from project.algorithms.core.midtools import get_start_offset, get_end_offset
+from project.algorithms.core.midtools import get_start_offset, get_end_offset, get_note_timeline, \
+    get_notes_in_time_range
 
 
 def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engine],
@@ -21,12 +25,16 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     # in the database
 
     query_mid = MidiFile(midi_path)
-    query_start, start_index = get_start_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
-    query_end, end_index = get_end_offset(query_mid.tracks[melody_track], query_mid.ticks_per_beat)
+    query_track = query_mid.tracks[melody_track]
+    query_start, start_index = get_start_offset(query_track, query_mid.ticks_per_beat)
+    query_end, end_index = get_end_offset(query_track, query_mid.ticks_per_beat)
+    query_notes = get_notes_in_time_range(query_track, query_mid.ticks_per_beat, query_start, query_end)
+    query_mean_pitch = sum(map(lambda n: n.pitch, query_notes)) / len(query_notes)
+    query_notes_norm =list(map(lambda n: n.normalize(query_mean_pitch, query_start, query_end), query_notes))
 
     print("Compare the query segment with the database of vectors")
 
-    similarity_map = defaultdict(lambda: 0)
+    similarity_map = {}
 
     for (window_size, observations), engine in vector_map.items():
         candidates = []
@@ -41,22 +49,35 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
             query_segments = segmenter.create_segments(query_mid, melody_track)
             for query_segment in query_segments:
                 neighbours = engine.neighbours(query_segment.pitch_vector)
-                for vec, (mid_name, cand_offset, pitch_mod), distance in neighbours:
+                for vec, (mid_file, cand_offset, pitch_mod, cand_track), distance in neighbours:
                     candidates.append(VectorCandidate(query_segment.start_offset, modifier, cand_offset,
-                                                      mid_name))
+                                                      mid_file, cand_track))
 
-        print(f"Number of candidates is {len(candidates)}")
+        print(f"Done finding candidates. Number of them is: {len(candidates)}")
 
-        for candidate in candidates:
-            print(f"{candidate} approx bounds = {candidate.get_candidate_segment_bounds(query_start, query_end)}")
+        for candidate in tqdm(candidates, desc="Testing candidate segments"):
+            start, end = candidate.get_candidate_segment_bounds(query_start, query_end)
+            song_track = candidate.song_ident.tracks[candidate.song_track]
+            candidate_notes = get_notes_in_time_range(song_track, candidate.ticks_per_beat, start, end)
+            mean_pitch = sum(map(lambda n: n.pitch, candidate_notes)) / len(candidate_notes)
+            norm_notes = list(map(lambda n: n.normalize(mean_pitch, start, end - start), candidate_notes))
+            dist = recursive_alignment(query_notes_norm, norm_notes, [], 2)
+
+            song_name = pathlib.Path(candidate.song_ident.filename).stem
+            if candidate.song_ident.filename not in similarity_map:
+                similarity_map[song_name] = dist
+
+            else:
+                similarity_map[song_name] = min(similarity_map[candidate.song_ident.filename],
+                                                dist)
         # curr_time = time.strftime("%Y%m%d_%I%M%S")
         # with open(f"{curr_time}_candidates.json", "w") as fh:
         #     json.dump(list(map(lambda c: c.__dict__, candidates)), fh)
 
-    sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1])}
+    sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1], reverse=True)}
     series = pd.Series(sorted_dict)
     series.to_csv(f"query_output/rankings/test.csv")
-    for index, (mid_name, similarity) in enumerate(sorted_dict.items()):
-        print(f"\t[{len(similarity_map.items()) - index}] {mid_name}: {similarity}")
+    for index, (mid_file, similarity) in enumerate(sorted_dict.items()):
+        print(f"\t[{len(similarity_map.items()) - index}] {mid_file}: {similarity}")
 
     return sorted_dict

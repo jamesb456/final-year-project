@@ -29,9 +29,11 @@ if __name__ == '__main__':
     fig.suptitle("Comparison of Top 20 most similar songs as returned by each algorithm")
 
     top20_vec.plot(x="MIDI name", kind="barh", ax=axes[0],
-                   title=f"Pitch Vector (no recursive alignment) : number of matches (higher is better)")
-    axes[0].set_xlabel("Number of matches (higher is better)")
+                   title=f"Pitch Vector (Dynamic Time Warping edition) : distance between aligned sequences "
+                         f"(lower is better)")
+    axes[0].set_xlabel("Distance (lower is better)")
     top20_graph.plot(x="MIDI name", kind="barh", ax=axes[1],
                      title=f"Graph: avg distance between query and song segments(lower is better)")
     axes[1].set_xlabel("Average distance between song segments and query segment (lower is better)")
     plt.show()
+

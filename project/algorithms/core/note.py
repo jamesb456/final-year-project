@@ -26,9 +26,6 @@ class Note:
         self.chord = chord
         self.start_message_index = start_message_index
         self.end_message_index = end_message_index
-        self.pitch_constant = 0
-        self.duration_constant = 1
-        self.offset_constant = 0
 
     @property
     def duration(self) -> float:
@@ -73,14 +70,12 @@ class Note:
         else:
             return constants.FUNCTIONAL_SCORE_DICT[abs(key_signature.note - self.chord.root_tone)]
 
-    def normalize(self, mean_pitch: float, start_offset: int, sequence_length: int):
-        self.pitch -= mean_pitch
-        self.start_time = (self.start_time - start_offset) / sequence_length
-        self.end_time = (self.end_time - start_offset) / sequence_length
-
-        self.pitch_constant = mean_pitch
-        self.duration_constant = sequence_length
-        self.offset_constant = start_offset
+    def normalize(self, mean_pitch: float, start_offset: int, sequence_length: int) -> "Note":
+        pitch = self.pitch - mean_pitch
+        start_time = (self.start_time - start_offset) / sequence_length
+        end_time = (self.end_time - start_offset) / sequence_length
+        return Note(start_time, end_time, pitch, self.channel, self.chord, self.start_message_index,
+                    self.end_message_index)
 
     def str(self):
         return self.__str__()
@@ -93,9 +88,10 @@ class Note:
         if self.pitch < 0 or self.pitch > 127:
             scientific_note = str(self.pitch) + " (out of range)"
         else:
-            scientific_note = constants.TWELVE_NOTE_SCALE[self.pitch % 12] + str(floor((self.pitch - 12) / 12.0))
+            scientific_note = constants.TWELVE_NOTE_SCALE[int(self.pitch) % 12] + str(
+                floor((int(self.pitch) - 12) / 12.0))
 
-        base = f"Note {scientific_note} start={self.start_time} length={self.duration} " \
+        base = f"Note {scientific_note} (MIDI note) {self.pitch} start={self.start_time} length={self.duration} " \
                f"channel={self.channel}"
         if self.chord is not None:
             base += f"chord={self.chord}"

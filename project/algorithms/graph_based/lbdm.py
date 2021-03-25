@@ -4,14 +4,14 @@ import numpy as np
 from project.algorithms.core.note import Note
 
 
-def default_change(x1: int, x2: int) -> float:
+def __default_change(x1: int, x2: int) -> float:
     if x1 == 0 and x2 == 0:
         return 0
     else:
         return abs(x1 - x2) / (x1 + x2)
 
 
-def normalize(arr: np.array) -> np.array:
+def __normalize(arr: np.array) -> np.array:
     if len(arr) == 0:
         return arr
     else:
@@ -20,7 +20,7 @@ def normalize(arr: np.array) -> np.array:
 
 def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5, rest_weight: float = 0.25,
          max_pitch_difference: int = 12, max_time_difference: int = 4096,
-         degree_of_change: Callable[[int, int], float] = default_change) \
+         degree_of_change: Callable[[int, int], float] = __default_change) \
         -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray, np.ndarray]]:
     """
     Creates a list of boundaries for the target MIDI track using the Local Boundary Detection Model.
@@ -82,21 +82,21 @@ def lbdm(notes: List[Note], pitch_weight: float = 0.25, ioi_weight: float = 0.5,
             next_rest = rests[i + 1]
 
         sequence_pitches.append((pitches[i] *
-                                 (degree_of_change(prev_pitch, pitches[i])
-                                  + (degree_of_change(pitches[i], next_pitch)))) + 1)
+                                 (degree_of_change(int(prev_pitch), int(pitches[i]))
+                                  + (degree_of_change(int(pitches[i]), int(next_pitch))))) + 1)
 
         sequence_iois.append((interonsets[i] *
-                              (degree_of_change(prev_ioi, interonsets[i])
-                               + (degree_of_change(interonsets[i], next_ioi)))) + 1)
+                              (degree_of_change(int(prev_ioi), int(interonsets[i]))
+                               + (degree_of_change(int(interonsets[i]), int(next_ioi))))) + 1)
 
         sequence_rests.append((rests[i] *
-                               (degree_of_change(prev_rest, rests[i])
-                                + (degree_of_change(rests[i], next_rest)))) + 1)
+                               (degree_of_change(int(prev_rest), int(rests[i]))
+                                + (degree_of_change(int(rests[i]), int(next_rest))))) + 1)
 
     # normalise to range [0,1]
-    sequence_pitches = normalize(np.array(sequence_pitches))
-    sequence_iois = normalize(np.array(sequence_iois))
-    sequence_rests = normalize(np.array(sequence_rests))
+    sequence_pitches = __normalize(np.array(sequence_pitches))
+    sequence_iois = __normalize(np.array(sequence_iois))
+    sequence_rests = __normalize(np.array(sequence_rests))
 
     sequence_profile = (sequence_pitches * pitch_weight) + (sequence_iois * ioi_weight) + (sequence_rests * rest_weight)
     return sequence_profile, (sequence_pitches, sequence_iois, sequence_rests)
