@@ -30,7 +30,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     query_end, end_index = get_end_offset(query_track, query_mid.ticks_per_beat)
     query_notes = get_notes_in_time_range(query_track, query_mid.ticks_per_beat, query_start, query_end)
     query_mean_pitch = sum(map(lambda n: n.pitch, query_notes)) / len(query_notes)
-    query_notes_norm =list(map(lambda n: n.normalize(query_mean_pitch, query_start, query_end), query_notes))
+    query_notes_norm = list(map(lambda n: n.normalize(query_mean_pitch, query_start, query_end), query_notes))
 
     print("Compare the query segment with the database of vectors")
 
@@ -61,7 +61,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
             candidate_notes = get_notes_in_time_range(song_track, candidate.ticks_per_beat, start, end)
             mean_pitch = sum(map(lambda n: n.pitch, candidate_notes)) / len(candidate_notes)
             norm_notes = list(map(lambda n: n.normalize(mean_pitch, start, end - start), candidate_notes))
-            dist = recursive_alignment(query_notes_norm, norm_notes, [], 2)
+            dist = recursive_alignment(query_notes_norm, norm_notes, [(0.45, 0.45), (0.5, 0.5), (0.55, 0.55)], 1)
 
             song_name = pathlib.Path(candidate.song_ident.filename).stem
             if candidate.song_ident.filename not in similarity_map:

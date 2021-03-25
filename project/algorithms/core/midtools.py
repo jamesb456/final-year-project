@@ -210,7 +210,7 @@ def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
             if msg.note in last_note_dict.keys():
                 notes[last_note_dict[msg.note]].end_time = curr_time  # set the last note's end time
             else:
-                notes.append(Note(start, curr_time, msg.note, msg.channel))
+                notes.append(Note(float(start), curr_time, msg.note, msg.channel))
                 # Say note starts at beginning of time window
     if len(notes) > 0:  # limit note end to end of time period
         if notes[-1].end_time == -1:
