@@ -22,6 +22,8 @@ if __name__ == "__main__":
                         nargs=1,
                         choices=["graph", "pitch_vector"],
                         help="Choose which algorithm to run. (default: %(default)s)")
+    parser.add_argument("--melody_track", type=int, default=0,
+                        help="The track that contains the query file's melody (default: %(default)s)")
     parser.add_argument("--write_graphs", action="store_true", help="If set, writes the graphs containing "
                                                                     "the query core connected to the original, "
                                                                     "stored graphs. (this only is relevant for the "
@@ -39,12 +41,12 @@ if __name__ == "__main__":
         print("Graph algorithm chosen: initialising dataset")
         graphs = create_dataset_graph()
         print("Done. Querying starting...")
-        query_graph(args.midi_path, args.use_minimum, args.write_graphs, graphs)
+        query_graph(args.midi_path, args.melody_track, args.use_minimum, args.write_graphs, graphs)
     elif args.algorithm[0] == "pitch_vector":
         print("Pitch Vector algorithm chosen: initialising dataset")
         pv_collections = create_dataset_pv()
         print("Done. Querying starting...")
-        query_pitch_vector(args.midi_path, pv_collections)
+        query_pitch_vector(args.midi_path, pv_collections, args.melody_track)
 
     end_time = time.time()
     print(f"Total time taken was {end_time - start_time}s.")

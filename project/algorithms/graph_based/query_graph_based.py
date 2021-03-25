@@ -12,12 +12,13 @@ from project.algorithms.graph_based.graph_segment import GraphSegment
 from project.algorithms.core.midtools import get_note_timeline
 
 
-def query_graph(midi_path: str, use_minimum: bool, write_graphs: bool, graphs: List[MidiGraph]) -> Dict[str, float]:
+def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
+                write_graphs: bool, graphs: List[MidiGraph]) -> Dict[str, float]:
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
     pathlib.Path(f"query_output/graphs/{pathlib.Path(midi_path).stem}").mkdir(exist_ok=True, parents=True)
-    notes = get_note_timeline(query_file.tracks[0])  # TODO: change to use arbitrary track index
+    notes = get_note_timeline(query_file.tracks[melody_track])
     query_segment = GraphSegment(query_file, 0, notes)
 
     query_reduced_segments = []
