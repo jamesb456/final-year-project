@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\"project/server/query_handler.proto\"^\n\tGraphArgs\x12\x11\n\tquery_mid\x18\x01 \x01(\t\x12\x13\n\x0buse_minimum\x18\x02 \x01(\x08\x12\x14\n\x0cmelody_track\x18\x03 \x01(\x05\x12\x13\n\x0b\x63hord_track\x18\x04 \x01(\x05\"5\n\nVectorArgs\x12\x11\n\tquery_mid\x18\x01 \x01(\t\x12\x14\n\x0cmelody_track\x18\x02 \x01(\x05\"\x81\x01\n\rQueryResponse\x12,\n\x07ranking\x18\x01 \x03(\x0b\x32\x1b.QueryResponse.RankingEntry\x12\x12\n\nquery_time\x18\x02 \x01(\x01\x1a.\n\x0cRankingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01:\x02\x38\x01\x32i\n\x0cQueryHandler\x12(\n\nQueryGraph\x12\n.GraphArgs\x1a\x0e.QueryResponse\x12/\n\x10QueryPitchVector\x12\x0b.VectorArgs\x1a\x0e.QueryResponseb\x06proto3'
+  serialized_pb=b'\n\"project/server/query_handler.proto\"^\n\tGraphArgs\x12\x11\n\tquery_mid\x18\x01 \x01(\t\x12\x13\n\x0buse_minimum\x18\x02 \x01(\x08\x12\x14\n\x0cmelody_track\x18\x03 \x01(\x05\x12\x13\n\x0b\x63hord_track\x18\x04 \x01(\x05\"5\n\nVectorArgs\x12\x11\n\tquery_mid\x18\x01 \x01(\t\x12\x14\n\x0cmelody_track\x18\x02 \x01(\x05\"\xe6\x01\n\rQueryResponse\x12,\n\x07ranking\x18\x01 \x03(\x0b\x32\x1b.QueryResponse.RankingEntry\x12\x31\n\nextra_info\x18\x02 \x03(\x0b\x32\x1d.QueryResponse.ExtraInfoEntry\x12\x12\n\nquery_time\x18\x03 \x01(\x01\x1a.\n\x0cRankingEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x01:\x02\x38\x01\x1a\x30\n\x0e\x45xtraInfoEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x32i\n\x0cQueryHandler\x12(\n\nQueryGraph\x12\n.GraphArgs\x1a\x0e.QueryResponse\x12/\n\x10QueryPitchVector\x12\x0b.VectorArgs\x1a\x0e.QueryResponseb\x06proto3'
 )
 
 
@@ -151,8 +151,46 @@ _QUERYRESPONSE_RANKINGENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=273,
-  serialized_end=319,
+  serialized_start=324,
+  serialized_end=370,
+)
+
+_QUERYRESPONSE_EXTRAINFOENTRY = _descriptor.Descriptor(
+  name='ExtraInfoEntry',
+  full_name='QueryResponse.ExtraInfoEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='QueryResponse.ExtraInfoEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='QueryResponse.ExtraInfoEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=372,
+  serialized_end=420,
 )
 
 _QUERYRESPONSE = _descriptor.Descriptor(
@@ -171,8 +209,15 @@ _QUERYRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='query_time', full_name='QueryResponse.query_time', index=1,
-      number=2, type=1, cpp_type=5, label=1,
+      name='extra_info', full_name='QueryResponse.extra_info', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='query_time', full_name='QueryResponse.query_time', index=2,
+      number=3, type=1, cpp_type=5, label=1,
       has_default_value=False, default_value=float(0),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -180,7 +225,7 @@ _QUERYRESPONSE = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_QUERYRESPONSE_RANKINGENTRY, ],
+  nested_types=[_QUERYRESPONSE_RANKINGENTRY, _QUERYRESPONSE_EXTRAINFOENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -190,11 +235,13 @@ _QUERYRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=190,
-  serialized_end=319,
+  serialized_end=420,
 )
 
 _QUERYRESPONSE_RANKINGENTRY.containing_type = _QUERYRESPONSE
+_QUERYRESPONSE_EXTRAINFOENTRY.containing_type = _QUERYRESPONSE
 _QUERYRESPONSE.fields_by_name['ranking'].message_type = _QUERYRESPONSE_RANKINGENTRY
+_QUERYRESPONSE.fields_by_name['extra_info'].message_type = _QUERYRESPONSE_EXTRAINFOENTRY
 DESCRIPTOR.message_types_by_name['GraphArgs'] = _GRAPHARGS
 DESCRIPTOR.message_types_by_name['VectorArgs'] = _VECTORARGS
 DESCRIPTOR.message_types_by_name['QueryResponse'] = _QUERYRESPONSE
@@ -222,15 +269,24 @@ QueryResponse = _reflection.GeneratedProtocolMessageType('QueryResponse', (_mess
     # @@protoc_insertion_point(class_scope:QueryResponse.RankingEntry)
     })
   ,
+
+  'ExtraInfoEntry' : _reflection.GeneratedProtocolMessageType('ExtraInfoEntry', (_message.Message,), {
+    'DESCRIPTOR' : _QUERYRESPONSE_EXTRAINFOENTRY,
+    '__module__' : 'project.server.query_handler_pb2'
+    # @@protoc_insertion_point(class_scope:QueryResponse.ExtraInfoEntry)
+    })
+  ,
   'DESCRIPTOR' : _QUERYRESPONSE,
   '__module__' : 'project.server.query_handler_pb2'
   # @@protoc_insertion_point(class_scope:QueryResponse)
   })
 _sym_db.RegisterMessage(QueryResponse)
 _sym_db.RegisterMessage(QueryResponse.RankingEntry)
+_sym_db.RegisterMessage(QueryResponse.ExtraInfoEntry)
 
 
 _QUERYRESPONSE_RANKINGENTRY._options = None
+_QUERYRESPONSE_EXTRAINFOENTRY._options = None
 
 _QUERYHANDLER = _descriptor.ServiceDescriptor(
   name='QueryHandler',
@@ -239,8 +295,8 @@ _QUERYHANDLER = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=321,
-  serialized_end=426,
+  serialized_start=422,
+  serialized_end=527,
   methods=[
   _descriptor.MethodDescriptor(
     name='QueryGraph',

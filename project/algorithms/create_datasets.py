@@ -13,7 +13,7 @@ from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorC
 
 def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
     # initialising LSH hash functions
-    binary_proj_1 = RandomBinaryProjectionTree("rbpt", 20, 20)
+    binary_proj_1 = RandomBinaryProjectionTree("rbpt", 10, 20)
 
     vector_map: Dict[Tuple[float, int], Engine] = {}
     available_pitch_vectors = list(pathlib.Path("mid/generated/pitch_vector").glob("**/*.pickle"))

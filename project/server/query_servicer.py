@@ -26,10 +26,10 @@ class QueryServicer(query_handler_pb2_grpc.QueryHandlerServicer):
         time_start = time.time()
         ranking = query_graph(request.query_mid, request.melody_track, request.use_minimum, False, self.graph_dataset)
         time_end = time.time()
-        return query_handler_pb2.QueryResponse(ranking=ranking, query_time=time_end-time_start)
+        return query_handler_pb2.QueryResponse(ranking=ranking, query_time=time_end-time_start, extra_info={})
 
     def QueryPitchVector(self, request, context):
         time_start = time.time()
-        ranking = query_pitch_vector(request.query_mid, self.vector_dataset, request.melody_track)
+        ranking, vectors = query_pitch_vector(request.query_mid, self.vector_dataset, request.melody_track)
         time_end = time.time()
-        return query_handler_pb2.QueryResponse(ranking=ranking, query_time=time_end-time_start)
+        return query_handler_pb2.QueryResponse(ranking=ranking, query_time=time_end-time_start, extra_info=vectors)

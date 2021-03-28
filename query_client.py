@@ -50,7 +50,7 @@ if __name__ == '__main__':
     axes[0].set_xlabel("Distance (lower is better)")
     top20_graph.plot(x="MIDI name", kind="barh", ax=axes[1],
                      title=f"Graph: avg distance between query and song segments(lower is better)")
-    axes[1].set_xlabel("Average distance between song segments and query segment (lower is better)")
+    axes[1].set_xlabel("avg distance between song segments and query segment (lower is better)")
 
     res1 = QueryResult(query, "graph", response_graph.query_time,
                        top20_graph[::-1].reset_index(drop=True).to_dict("index"))

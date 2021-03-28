@@ -19,6 +19,7 @@ message VectorArgs{
 
 message QueryResponse{
   map<string, double> ranking = 1;
-  double query_time = 2;
+  map<string, string> extra_info = 2;
+  double query_time = 3;
 }
 

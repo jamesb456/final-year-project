@@ -85,12 +85,14 @@ def lbdm_graph(track: mido.MidiTrack, ticks_per_beat: int = 1024):
     plt.style.use("fivethirtyeight")
     plt.xlabel("Note interval index")
     plt.ylabel("Boundary strength")
-    plt.title("LBDM test")
+    plt.title("LBDM segmentation example")
     barwidth = 0.3
     plt.plot(np.array(range(len(profile))), profile, label="LBDM overall boundary strength", linewidth=2, color="purple")
-    plt.bar(np.array(range(len(profile))) - barwidth, pitch, label="Pitch boundary strength", width=barwidth)
-    plt.bar(np.array(range(len(profile))), ioi, label="Inter onset boundary strength", width=barwidth)
-    plt.bar(np.array(range(len(profile))) + barwidth, rest, label="Rest boundary strength", width=barwidth)
+    plt.scatter(np.array(range(len(profile))), profile, color="purple")
+    # plt.bar(np.array(range(len(profile))) - barwidth, pitch, label="Pitch boundary strength", width=barwidth)
+    # plt.bar(np.array(range(len(profile))), ioi, label="Inter onset boundary strength", width=barwidth)
+    # plt.bar(np.array(range(len(profile))) + barwidth, rest, label="Rest boundary strength", width=barwidth)
+    plt.axhline(y=0.5, color='r', linestyle='-', label="Example threshold (0.5)")
     plt.tight_layout()
     plt.legend()
 

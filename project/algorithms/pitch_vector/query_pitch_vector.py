@@ -19,7 +19,7 @@ from project.algorithms.core.midtools import get_start_offset, get_end_offset, g
 
 
 def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engine],
-                       melody_track: int = 0) -> Dict[str, float]:
+                       melody_track: int = 0) -> Tuple[Dict[str, float], Dict[str, str]]:
     # build up database of pitch vectors
     # then segment the query based on the different window sizes and observations
     # in the database
@@ -35,7 +35,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     print("Compare the query segment with the database of vectors")
 
     similarity_map = {}
-
+    matched_vectors = {}
     for (window_size, observations), engine in vector_map.items():
         candidates = []
         # segment the query song
@@ -61,15 +61,20 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
             candidate_notes = get_notes_in_time_range(song_track, candidate.ticks_per_beat, start, end)
             mean_pitch = sum(map(lambda n: n.pitch, candidate_notes)) / len(candidate_notes)
             norm_notes = list(map(lambda n: n.normalize(mean_pitch, start, end - start), candidate_notes))
+            #  doesn't work atm: uses DTW to get an alignment instead
             dist = recursive_alignment(query_notes_norm, norm_notes, [(0.45, 0.45), (0.5, 0.5), (0.55, 0.55)], 1)
 
             song_name = pathlib.Path(candidate.song_ident.filename).stem
-            if candidate.song_ident.filename not in similarity_map:
+            if song_name not in similarity_map:
                 similarity_map[song_name] = dist
-
+                matched_vectors[song_name] = f"{start} {end} {candidate.window_modifier}"
             else:
-                similarity_map[song_name] = min(similarity_map[candidate.song_ident.filename],
-                                                dist)
+                min_value = min(similarity_map[song_name],
+                                dist)
+                similarity_map[song_name] = min_value
+                if min_value == dist:
+                    matched_vectors[song_name] = f"{start} {end} {candidate.window_modifier}"
+
         # curr_time = time.strftime("%Y%m%d_%I%M%S")
         # with open(f"{curr_time}_candidates.json", "w") as fh:
         #     json.dump(list(map(lambda c: c.__dict__, candidates)), fh)
@@ -80,4 +85,4 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
     for index, (mid_file, similarity) in enumerate(sorted_dict.items()):
         print(f"\t[{len(similarity_map.items()) - index}] {mid_file}: {similarity}")
 
-    return sorted_dict
+    return sorted_dict, matched_vectors
