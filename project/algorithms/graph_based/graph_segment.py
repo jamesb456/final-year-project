@@ -17,14 +17,14 @@ class GraphSegment(MidiSegment):
         self.time_signature_events, self.key_signature_events = get_track_signatures(file.tracks[melody_track_ind])
 
     @property
-    def start_time(self) -> Optional[int]:
+    def start_time(self) -> Optional[float]:
         if len(self.notes) > 0:
             return self.notes[0].start_time
         else:
             return None
 
     @property
-    def end_time(self) -> Optional[int]:
+    def end_time(self) -> Optional[float]:
         if len(self.notes) > 0:
             return self.notes[-1].end_time
         else:
@@ -125,7 +125,7 @@ class GraphSegment(MidiSegment):
 
         start_position = self.start_time
         while start_position < self.end_time:
-            window_notes = self.get_notes_in_time_range(start_position, window_size)
+            window_notes = self.get_notes_in_time_range(int(start_position), window_size)
 
             if len(window_notes) == 0:
                 start_position += window_size
@@ -150,8 +150,8 @@ class GraphSegment(MidiSegment):
                 note_weights = []
 
                 for note in window_notes:
-                    time_sig_time, time_sig_value = self.__get_time_signature_at(note.start_time)
-                    key_sig_value = self.__get_key_signature_at(note.start_time)
+                    time_sig_time, time_sig_value = self.__get_time_signature_at(int(note.start_time))
+                    key_sig_value = self.__get_key_signature_at(int(note.start_time))
 
                     beat_strength = note.get_metric_strength(self.ticks_per_beat, time_sig_value, time_sig_time)
                     consonance_score = note.get_consonance_score()

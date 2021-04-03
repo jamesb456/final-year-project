@@ -18,8 +18,8 @@ class PitchVectorSegment(MidiSegment):
         pass
 
     def save_segment(self, filepath: str):
-        with open(filepath, 'wb') as f:
-            pickle.dump(self, f)
+        with open(filepath, 'wb') as fh:
+            pickle.dump(self, fh)
 
     def save_as_midi(self, filepath: str):
         pass

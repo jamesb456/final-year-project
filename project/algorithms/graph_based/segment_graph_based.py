@@ -1,6 +1,7 @@
 import pathlib
 import sys
 import time
+import pickle
 from typing import Optional
 
 from mido import MidiFile
@@ -33,14 +34,15 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
 
     mid_location = f"mid/generated/graph/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
-    print("Saving original segments to {}...".format(pathlib.Path(mid_location)))
+    pathlib.Path(mid_location + "/midi_segments/").mkdir(parents=True, exist_ok=True)
+    print("Saving original segments to {}...".format(pathlib.Path(mid_location + "/midi_segments/")))
 
     graph = MidiGraph(mid_file, melody_track, chord_track)
 
     for (index, segment) in enumerate(segments):
-        midi_filepath = str(pathlib.Path(f"{mid_location}/segment_{index}.mid"))
+        midi_filepath = str(pathlib.Path(f"{mid_location}/midi_segments/segment_{index}.mid"))
         segment.save_as_midi(midi_filepath)
-        graph.add_identifying_node(midi_filepath)
+        graph.add_identifying_node(midi_filepath, segment)
 
     print("Starting recursive reduction")
 
@@ -55,25 +57,25 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
             # don't reduce if there's only one note left
             if segment.get_number_of_notes() > 1:
                 weight, reduced_segment = segment.reduce_segment()
-                reduced_filepath = str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i}.mid"))
+                reduced_filepath = str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i}.mid"))
                 reduced_segments.append((seg_ind, reduced_segment))
                 reduced_segment.save_as_midi(filepath=reduced_filepath)
-                graph.add_node(filepath=reduced_filepath)
+                graph.add_node(reduced_filepath, reduced_segment)
                 if i > 1:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}_reduction_{i-1}.mid")),
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i-1}.mid")),
                                    f2=reduced_filepath, weight=weight)
                 else:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/segment_{seg_ind}.mid")),
+                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
                                    f2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
         current_segments = reduced_segments
         i += 1
 
     print("Done reducing as all segments have at most 1 note.")
-
     print("Saving graph structure")
-    graph.save_to_file(filepath=f"{mid_location}/graph.gpickle")
-
+    with open(str(pathlib.Path(f"{mid_location}/graph.gpickle")), "wb") as fh:
+        pickle.dump(graph, fh, protocol=pickle.HIGHEST_PROTOCOL)
+    print("Graph saved")
     combined_dict = {}
     for (iteration, r_segments) in segment_dict.items():
         for (seg_ind, segment) in r_segments:

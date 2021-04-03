@@ -16,9 +16,9 @@ def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
     binary_proj_1 = RandomBinaryProjectionTree("rbpt", 10, 20)
 
     vector_map: Dict[Tuple[float, int], Engine] = {}
-    available_pitch_vectors = list(pathlib.Path("mid/generated/pitch_vector").glob("**/*.pickle"))
+    available_pitch_vectors = pathlib.Path("mid/generated/pitch_vector").glob("**/*.pickle")
     num_vectors = 0
-    for mid in tqdm(available_pitch_vectors):
+    for mid in tqdm(available_pitch_vectors, unit=" music pieces", desc="Progress"):
         with open(mid, "rb") as fh:
             pv_collection: PitchVectorCollection = pickle.load(fh)
         num_vectors += len(pv_collection.vectors)
@@ -36,11 +36,11 @@ def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
 
 
 def create_dataset_graph() -> List[MidiGraph]:
-    available_graphs = list(pathlib.Path("mid/generated/graph").glob("**/*.gpickle"))
+    available_graphs = pathlib.Path("mid/generated/graph").glob("**/*.gpickle")
     graphs = []
-    for gpickle in tqdm(available_graphs):
-        graph = MidiGraph.from_gpickle(str(gpickle))
-        graph.load_notes_for_segments(str(pathlib.Path(gpickle).parents[0]))
+    for gpickle in tqdm(available_graphs, unit=" music pieces", desc="Progress"):
+        with open(gpickle, "rb") as fh:
+            graph = pickle.load(fh)
         graphs.append(graph)
 
     return graphs

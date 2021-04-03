@@ -5,6 +5,7 @@ __pycache__
 .DS_Store
 
 venv/
+venvpypy/
 mid/generated/
 mid/open-wikifonia-leadsheets
 mid/owld-midi

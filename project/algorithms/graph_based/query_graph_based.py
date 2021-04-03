@@ -37,7 +37,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
     for midi_graph in prog_bar:
         # get a copy of the graph
         graph = midi_graph.get_copy_of_graph()
-        source_mid_path = str(pathlib.Path(graph.nodes["root"]["source"]).stem)
+        source_mid_path = pathlib.Path(midi_graph.mid_file.filename).stem
         prog_bar.set_postfix({"current_graph": source_mid_path})
         # print("\n=====================\nOpening graph for " + source_mid_path + " for querying \n")
 
@@ -62,7 +62,8 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
                     original_nodes.append(node)
 
                 # load the mid at this graph position
-                segment_timeline = node_data["notes"]
+                g_segment: GraphSegment = node_data["segment"]
+                segment_timeline = g_segment.notes
                 if query_segment.notes == segment_timeline:
                     # dot.add_edge("query", node, label=0, color="blue")
                     continue
@@ -91,7 +92,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
                         # if it's the last reduced node
                         graph.add_edge(last_node, node, label=non_connected_penalty, color="red")
 
-        # we've added the query core: now we can compute the distance of the shortest path
+        # we've added the query segment and reductions: now we can compute the distance of the shortest path
         total_path_length = 0
         min_path_length = float('inf')
         for original_node in original_nodes:
@@ -124,14 +125,6 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
     for index, (mid_name, similarity) in enumerate(sorted_dict.items()):
         print(f"\t[{len(sorted_dict.items()) - index}] {mid_name}: {similarity}")
 
-    # plt.clf()
-    # series.plot(kind="barh")
-    # plt.ylabel("MIDI file")
-
-    # plt.xlabel(f"{metric} distance to query core")
-    # plt.title(f"{metric} distance between the query core {pathlib.Path(args.midi_path)} and known MIDI graphs "
-    #           f"(Lower is better)")
-    # plt.show(block=False)
     series.rename_axis(f"{metric} core distance from query core")
     series.to_csv(f"query_output/rankings/{pathlib.Path(midi_path).stem}.csv")
     return sorted_dict

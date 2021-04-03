@@ -22,7 +22,7 @@ if __name__ == '__main__':
     curr_time = time.strftime("%Y%m%d_%I%M%S")
     channel = grpc.insecure_channel('localhost:8007')
     stub = QueryHandlerStub(channel)
-    query = "mid/generated/graph/ashover8/segment_0.mid"
+    query = "mid/generated/graph/ashover8/midi_segments/segment_0.mid"
     print(f"Asking server for similarity rankings for {query} with notes from track 0")
 
     print("Pitch Vector Algorithm")
