@@ -1,10 +1,12 @@
 import pathlib
+import time
 from typing import List, Dict
 
 import networkx
 import pandas as pd
 from mido import MidiFile
 from networkx import astar_path_length, write_gpickle
+from networkx.drawing.nx_pydot import write_dot
 from tqdm import tqdm
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
@@ -17,7 +19,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
-    pathlib.Path(f"query_output/graphs/{pathlib.Path(midi_path).stem}").mkdir(exist_ok=True, parents=True)
+    curr_time = time.strftime("%Y%m%d_%I%M%S")
     notes = get_note_timeline(query_file.tracks[melody_track])
     query_segment = GraphSegment(query_file, 0, notes)
 
@@ -58,11 +60,13 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
             if "query" in node or node == "root":  # ignore any nodes from the query or the root node
                 pass
             else:
+
                 if "label" in node_data.keys() and ("original_segment" in node_data["label"]):
                     original_nodes.append(node)
 
                 # load the mid at this graph position
                 g_segment: GraphSegment = node_data["segment"]
+
                 segment_timeline = g_segment.notes
                 if query_segment.notes == segment_timeline:
                     # dot.add_edge("query", node, label=0, color="blue")
@@ -77,9 +81,10 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
                         continue
 
                     last_node = "query"
+
                     for i in range(len(query_reduced_segments)):
                         _, r_segment = query_reduced_segments[i]
-                        j = 0
+
                         if r_segment.notes == segment_timeline:
                             graph.add_edge(f"query_reduction_{i + 1}", node, label=0, color="blue")
                             last_node = f"query_reduction_{i + 1}"
@@ -115,8 +120,11 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
         #  print(f"Done: {metric} distance was {similarity_dict[source_mid_path]}")
         if write_graphs:
             #  print("= --write_graphs: Writing graph to file=")
-            write_gpickle(graph, f"query_output/graphs/{pathlib.Path(midi_path).stem}"
-                                 f"/output_{source_mid_path}.gpickle")
+            pathlib.Path(f"query_output/graphs/{curr_time}_{pathlib.Path(midi_path).stem}")\
+                   .mkdir(exist_ok=True, parents=True)
+
+            write_dot(graph, f"query_output/graphs/{curr_time}_{pathlib.Path(midi_path).stem}"
+                             f"/output_{source_mid_path}.dot")
 
     print("\nDone: Final similarity rankings (least to most similar): ")
     sorted_dict = {k: v for k, v in sorted(similarity_dict.items(), key=lambda item: item[1], reverse=True)}

@@ -8,6 +8,7 @@ import datetime
 from project.algorithms.graph_based.query_graph_based import query_graph
 from project.algorithms.pitch_vector.query_pitch_vector import query_pitch_vector
 from project.algorithms.create_datasets import create_dataset_pv, create_dataset_graph
+import project.algorithms.core.constants as constants
 
 if __name__ == "__main__":
     start_time = time.time()
@@ -56,7 +57,7 @@ if __name__ == "__main__":
     sortby = pstats.SortKey.CUMULATIVE
     ps = pstats.Stats(profile, stream=s).sort_stats(sortby)
     ps.print_stats()
-    curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
+    curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
     ps.dump_stats(f"stats/{curr_time}_query.stats")
     if args.show_profiling:
         print(s.getvalue())

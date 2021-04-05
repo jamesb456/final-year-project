@@ -10,6 +10,7 @@ from functools import partial
 from typing import Optional
 from multiprocessing import Pool
 
+import project.algorithms.core.constants as constants
 from project.algorithms.graph_based.segment_graph_based import segment_graph
 from project.algorithms.pitch_vector.segment_pitch_vector import segment_pitch_vector
 
@@ -96,7 +97,7 @@ if __name__ == '__main__':
         sortby = pstats.SortKey.CUMULATIVE
         ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
         ps.print_stats()
-        curr_time = datetime.datetime.now().strftime("%Y%m%d_%I%M%S")
+        curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
         ps.dump_stats(f"stats/{curr_time}_segment_{args.algorithm[0]}.stats")
         print(s.getvalue())
 

@@ -10,7 +10,8 @@ from project.algorithms.graph_based.graph_segment import GraphSegment
 
 
 class MidiGraph:
-    def __init__(self, mid_file: MidiFile, melody_track: int, chord_track: Optional[int] = None, graph: Optional[networkx.Graph] = None):
+    def __init__(self, mid_file: MidiFile, melody_track: int, chord_track: Optional[int] = None,
+                 graph: Optional[networkx.Graph] = None):
         if graph is not None:
             self.__graph = graph
         else:

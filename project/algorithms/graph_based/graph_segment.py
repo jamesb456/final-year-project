@@ -209,4 +209,5 @@ class GraphSegment(MidiSegment):
 
         return weight, GraphSegment(self._file, self.melody_track_ind, reduced_notes)
 
-
+    def __str__(self):
+        return str(self.__dict__)

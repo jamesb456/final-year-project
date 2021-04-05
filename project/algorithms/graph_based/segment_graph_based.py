@@ -46,14 +46,14 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
 
     print("Starting recursive reduction")
 
-    current_segments = list(enumerate(segments))
+    segments_and_indices = list(enumerate(segments))
     segment_dict = {}
     i = 1
     # recursively apply reduction
-    while any([segment.get_number_of_notes() > 1 for _, segment in current_segments]):
+    while any([segment.get_number_of_notes() > 1 for _, segment in segments_and_indices]):
         print(f"Beginning reduction number {i}")
-        reduced_segments = []
-        for (seg_ind, segment) in current_segments:
+        reduced_segments = []  # current segments and indices of those segments to be reduced
+        for (seg_ind, segment) in segments_and_indices:
             # don't reduce if there's only one note left
             if segment.get_number_of_notes() > 1:
                 weight, reduced_segment = segment.reduce_segment()
@@ -68,7 +68,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
                                    f2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
-        current_segments = reduced_segments
+        segments_and_indices = reduced_segments
         i += 1
 
     print("Done reducing as all segments have at most 1 note.")

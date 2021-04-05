@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 
@@ -6,6 +7,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from typing import Dict
+
+from project.algorithms.core import constants
 from project.server.query_handler_pb2_grpc import QueryHandlerStub
 from project.server.query_handler_pb2 import VectorArgs, GraphArgs
 
@@ -19,7 +22,7 @@ class QueryResult:
 
 
 if __name__ == '__main__':
-    curr_time = time.strftime("%Y%m%d_%I%M%S")
+    curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
     channel = grpc.insecure_channel('localhost:8007')
     stub = QueryHandlerStub(channel)
     query = "mid/generated/graph/ashover8/midi_segments/segment_0.mid"
