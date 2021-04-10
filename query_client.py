@@ -31,7 +31,7 @@ if __name__ == '__main__':
     print("Pitch Vector Algorithm")
     response_vec = stub.QueryPitchVector(VectorArgs(query_mid=query, melody_track=0))
     print("Done. Graph based algorithm")
-    response_graph = stub.QueryGraph(GraphArgs(query_mid=query, use_minimum=False, melody_track=0))
+    response_graph = stub.QueryGraph(GraphArgs(query_mid=query, use_minimum=False, melody_track=0, chord_track=1))
 
     print(f"The time to query (on the servers end) was \n(pitch vector) {response_vec.query_time}s\n"
           f"(graph) {response_graph.query_time}s")

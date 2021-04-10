@@ -1,27 +1,27 @@
 import pathlib
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import networkx
 import pandas as pd
 from mido import MidiFile
-from networkx import astar_path_length, write_gpickle
+from networkx import astar_path_length
 from networkx.drawing.nx_pydot import write_dot
 from tqdm import tqdm
 
 from project.algorithms.graph_based.midi_graph import MidiGraph
-from project.algorithms.graph_based.graph_segment import GraphSegment
+from project.algorithms.core.note_segment import NoteSegment
 from project.algorithms.core.midtools import get_note_timeline
 
 
 def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
-                write_graphs: bool, graphs: List[MidiGraph]) -> Dict[str, float]:
+                write_graphs: bool, graphs: List[MidiGraph], chord_track: Optional[int] = None) -> Dict[str, float]:
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
     curr_time = time.strftime("%Y%m%d_%I%M%S")
-    notes = get_note_timeline(query_file.tracks[melody_track])
-    query_segment = GraphSegment(query_file, 0, notes)
+    notes = get_note_timeline(query_file.tracks[melody_track], chord_track)
+    query_segment = NoteSegment(query_file, 0, notes)
 
     query_reduced_segments = []
     current_segment = query_segment
@@ -65,7 +65,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
                     original_nodes.append(node)
 
                 # load the mid at this graph position
-                g_segment: GraphSegment = node_data["segment"]
+                g_segment: NoteSegment = node_data["segment"]
 
                 segment_timeline = g_segment.notes
                 if query_segment.notes == segment_timeline:
@@ -115,8 +115,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
             similarity_dict[source_mid_path] = min_path_length
         else:
             # min distance between source segments and query core
-            similarity_dict[source_mid_path] = total_path_length / len(
-                original_nodes)
+            similarity_dict[source_mid_path] = total_path_length / len(original_nodes)
         #  print(f"Done: {metric} distance was {similarity_dict[source_mid_path]}")
         if write_graphs:
             #  print("= --write_graphs: Writing graph to file=")

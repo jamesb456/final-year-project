@@ -8,7 +8,7 @@ from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 from project.algorithms.core.midtools import get_track_signatures
 
 
-class GraphSegment(MidiSegment):
+class NoteSegment(MidiSegment):
 
     def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note]):
         super().__init__(file, melody_track_ind)
@@ -107,9 +107,9 @@ class GraphSegment(MidiSegment):
     def save_segment(self, filepath):
         pass
 
-    def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'GraphSegment']:
+    def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'NoteSegment']:
         if self.get_number_of_notes() < 2:
-            return 1, GraphSegment(self._file, self.melody_track_ind, self.notes)
+            return 1, NoteSegment(self._file, self.melody_track_ind, self.notes)
 
         reduced_notes = []
 
@@ -207,7 +207,7 @@ class GraphSegment(MidiSegment):
                 # in the paper this is called the *semantic* distance measure
                 weight += ((strongest_total - prev_strongest_total) / 3)
 
-        return weight, GraphSegment(self._file, self.melody_track_ind, reduced_notes)
+        return weight, NoteSegment(self._file, self.melody_track_ind, reduced_notes)
 
     def __str__(self):
         return str(self.__dict__)

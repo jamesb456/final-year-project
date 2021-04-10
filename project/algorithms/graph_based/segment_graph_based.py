@@ -41,7 +41,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
 
     for (index, segment) in enumerate(segments):
         midi_filepath = str(pathlib.Path(f"{mid_location}/midi_segments/segment_{index}.mid"))
-        segment.save_as_midi(midi_filepath)
         graph.add_identifying_node(midi_filepath, segment)
 
     print("Starting recursive reduction")
@@ -59,7 +58,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
                 weight, reduced_segment = segment.reduce_segment()
                 reduced_filepath = str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i}.mid"))
                 reduced_segments.append((seg_ind, reduced_segment))
-                reduced_segment.save_as_midi(filepath=reduced_filepath)
                 graph.add_node(reduced_filepath, reduced_segment)
                 if i > 1:
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i-1}.mid")),
@@ -68,7 +66,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
                                    f2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
-        segments_and_indices = reduced_segments
         i += 1
 
     print("Done reducing as all segments have at most 1 note.")
@@ -85,7 +82,6 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     if save_combined:
         print("--saved_combined specified: saving combined segments...")
         for (segment_index, indexed_segments) in combined_dict.items():
-
             new_file = MidiFile(**indexed_segments[0].get_file_metadata())
             original_track = new_file.add_track()
             segments[segment_index].copy_notes_to_track(original_track)

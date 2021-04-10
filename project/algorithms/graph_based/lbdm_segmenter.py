@@ -5,7 +5,7 @@ from mido import MidiTrack, MidiFile
 
 from project.algorithms.graph_based import lbdm
 from project.algorithms.core.segmenter import Segmenter
-from project.algorithms.graph_based.graph_segment import GraphSegment
+from project.algorithms.core.note_segment import NoteSegment
 from project.algorithms.core.midtools import get_note_timeline
 
 
@@ -20,7 +20,7 @@ class LbdmSegmenter(Segmenter):
         self.ioi_weight = ioi_weight
         self.rest_weight = rest_weight
 
-    def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[GraphSegment]:
+    def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[NoteSegment]:
 
         # determine which track to core
         track: MidiTrack = mid.tracks[track_index]
@@ -45,9 +45,9 @@ class LbdmSegmenter(Segmenter):
             if timeline[profile_index[0]].end_time < mid.ticks_per_beat * 4:
                 pass
             elif boundary_strength > self.threshold:
-                segments.append(GraphSegment(mid, track_index, timeline[last_segmentation_index + 1:profile_index[0] + 1]))
+                segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:profile_index[0] + 1]))
                 last_segmentation_index = profile_index[0]
 
         # get last few notes
-        segments.append(GraphSegment(mid, track_index, timeline[last_segmentation_index + 1:]))
+        segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:]))
         return segments

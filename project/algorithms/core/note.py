@@ -91,7 +91,7 @@ class Note:
             scientific_note = constants.TWELVE_NOTE_SCALE[int(self.pitch) % 12] + str(
                 floor((int(self.pitch) - 12) / 12.0))
 
-        base = f"Note {scientific_note} (MIDI note) {self.pitch} start={self.start_time} length={self.duration} " \
+        base = f"Note {scientific_note} (MIDI note {self.pitch}) start={self.start_time} length={self.duration} " \
                f"channel={self.channel}"
         if self.chord is not None:
             base += f"chord={self.chord}"
@@ -102,5 +102,4 @@ class Note:
 
     def __eq__(self, other: "Note"):
         return self.duration == other.duration and \
-               self.pitch == other.pitch and \
-               self.chord == other.chord
+               self.pitch == other.pitch

@@ -1,3 +1,4 @@
+import pathlib
 from abc import ABC, abstractmethod
 from collections import deque
 from typing import Deque, Tuple
@@ -17,6 +18,10 @@ class MidiSegment(ABC):
     @property
     def ticks_per_beat(self) -> int:
         return self._file.ticks_per_beat
+
+    @property
+    def filename(self) -> str:
+        return str(pathlib.Path(self._file.filename).stem)
 
     def _get_melody_instructional_messages(self) -> Deque[Tuple[int, Message]]:
         time = 0

@@ -6,7 +6,7 @@ from typing import Optional
 from mido import MidiFile
 
 
-from project.algorithms.graph_based.graph_segment import GraphSegment
+from project.algorithms.core.note_segment import NoteSegment
 
 
 class MidiGraph:
@@ -20,11 +20,11 @@ class MidiGraph:
         self.melody_track = melody_track
         self.chord_track = chord_track
 
-    def add_node(self, filepath: str, segment: GraphSegment):
+    def add_node(self, filepath: str, segment: NoteSegment):
         self.__graph.add_node(pathlib.Path(filepath).stem, shape="box",
                               segment=segment)
 
-    def add_identifying_node(self, filepath: str, segment: GraphSegment):
+    def add_identifying_node(self, filepath: str, segment: NoteSegment):
         self.__graph.add_node(pathlib.Path(filepath).stem, label="original_" + pathlib.Path(filepath).stem,
                               style="filled", fillcolor="gray", fontcolor="white", shape="box", segment=segment)
 

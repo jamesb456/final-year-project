@@ -23,7 +23,7 @@ def segment_pitch_vector(midi_path: str, melody_track: int, window_size: float =
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
     pv_collection = PitchVectorCollection(mid_file, segments, window_size, num_observations, melody_track)
     with open(f"{mid_location}/pitch_vectors.pickle", "wb") as file:
-        pickle.dump(pv_collection, file)
+        pickle.dump(pv_collection, file, pickle.HIGHEST_PROTOCOL)
     time_end = time.time()
     print(f"Done. Created {len(segments)} vectors ( window size of {window_size}s with {num_observations} dimensions)")
     print(f"It took {time_end - time_start} seconds")

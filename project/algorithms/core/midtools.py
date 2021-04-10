@@ -130,8 +130,7 @@ def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
     return chords
 
 
-def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = None,
-                      start_time: Optional[int] = None, end_time: Optional[int] = None) -> List[Note]:
+def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = None) -> List[Note]:
     """
     Returns a list of notes derived from the messages within the MIDI track. The data stored within each note is
     1. The start time of the note (in ticks)
@@ -143,7 +142,6 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
     Args:
         track: A track from a MIDI file
         chord_track: A track containing what chords were played in the midi file.
-        start_time: The time at which to begin looking for notes
     Returns:
         A list of notes derived from the messages in the MIDI track .
 
