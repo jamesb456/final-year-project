@@ -13,7 +13,8 @@ from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 from project.algorithms.core.midtools import is_note_on, is_note_off
 
 
-def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int], save_combined: bool) -> int:
+def segment_graph(midi_path: str, melody_track: int, output_folder: str,
+                  chord_track: Optional[int], save_combined: bool) -> int:
     time_start = time.time()
 
     resolved_path = pathlib.Path(midi_path)
@@ -34,10 +35,9 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")
 
-    mid_location = f"mid/generated/graph/{mid_name}"
+    mid_location = f"mid/generated/graph/{output_folder}/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(mid_location + "/midi_segments/").mkdir(parents=True, exist_ok=True)
-    print("Saving original segments to {}...".format(pathlib.Path(mid_location + "/midi_segments/")))
+
 
     graph = MidiGraph(mid_file, melody_track, chord_track)
 

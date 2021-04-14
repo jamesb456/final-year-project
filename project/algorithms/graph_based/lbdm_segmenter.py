@@ -50,5 +50,6 @@ class LbdmSegmenter(Segmenter):
                 last_segmentation_index = profile_index[0]
 
         # get last few notes
-        segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:]))
+        segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:],
+                                    chord_track_ind=chord_track_ind))
         return segments

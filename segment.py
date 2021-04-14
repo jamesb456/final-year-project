@@ -1,5 +1,6 @@
 import argparse
 import json
+import pathlib
 import sys
 import time
 import datetime
@@ -21,28 +22,40 @@ if __name__ == '__main__':
     prof.enable()
     parser = argparse.ArgumentParser(description="Split a MIDI file into several segments "
                                                  "so it may be queried for similarity")
-    parser.add_argument("midi_paths", nargs="+", type=str, help="Path to MIDI file(s) to core")
+    parser.add_argument("midi_paths", nargs="+", type=str,
+                        help="Path to MIDI file(s) to segment")
+
+    parser.add_argument("-o", "--output_folder", type=str,
+                        help="Folder to put the output of the segmentation. This folder "
+                             "will be located in the folder mid/generated/<algorithm>/")
+
     parser.add_argument("--algorithm",
                         default=["graph"],
                         nargs=1,
                         choices=["graph", "pitch_vector"],
                         help="Choose which algorithm to run. (default: %(default)s)")
+
     parser.add_argument("--melody_track", type=int, default=0,
                         help="The track the file should be segmented with respect to (default: %(default)s)")
+
     parser.add_argument("--chord_track", type=int, nargs="?",
                         help="The track containing the chords in the MIDI file (if such a track exists) (only "
                              "relevant for the graph based algorithm)")
+
     parser.add_argument("--n_processes", type=int, default=1,
                         help="The number of processes that should be used to segment the music (segmenting one MIDI "
                              "file per process) (default: %(default)s)")
-    parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
-                                                                      "from python's cProfile module "
-                                                                      "(default: %(default)s)")
 
-    parser.add_argument("--save_combined", action="store_true", help="If set and running the graph algorithm, "
-                                                                     "saves all of the reductions of each core "
-                                                                     "into one MIDI file (as well as the usual reduced "
-                                                                     "segments normally) (default: %(default)s)")
+    parser.add_argument("--show_profiling", action="store_true",
+                        help="If set, shows profiling information collected "
+                             "from python's cProfile module "
+                             "(default: %(default)s)")
+
+    parser.add_argument("--save_combined", action="store_true",
+                        help="If set and running the graph algorithm, "
+                             "saves all of the reductions of each core "
+                             "into one MIDI file (as well as the usual reduced "
+                             "segments normally) (default: %(default)s)")
 
     args = parser.parse_args()
     err_count = 0
@@ -60,8 +73,8 @@ if __name__ == '__main__':
 
     if args.algorithm[0] == "graph":
         graph_start = time.time()
-        graph_func = partial(segment_graph, melody_track=args.melody_track, chord_track=args.chord_track,
-                             save_combined=args.save_combined)
+        graph_func = partial(segment_graph, melody_track=args.melody_track, output_folder=args.output_folder,
+                             chord_track=args.chord_track, save_combined=args.save_combined)
 
         errors = []
         if args.n_processes == 1:
@@ -81,7 +94,7 @@ if __name__ == '__main__':
 
     elif args.algorithm[0] == "pitch_vector":
         vector_start = time.time()
-        pitch_func = partial(segment_pitch_vector, melody_track=args.melody_track)
+        pitch_func = partial(segment_pitch_vector, melody_track=args.melody_track, output_folder=args.output_folder)
         errors = []
         if args.n_processes == 1:
             for path in paths:
@@ -112,9 +125,8 @@ if __name__ == '__main__':
         ps = pstats.Stats(prof, stream=s).sort_stats(sortby)
         ps.print_stats()
         curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
-        ps.dump_stats(f"stats/{curr_time}_segment_{args.algorithm[0]}.stats")
+        pathlib.Path(f"stats/{args.output_folder}").mkdir(parents=True, exist_ok=True)
+        ps.dump_stats(f"stats/{args.output_folder}/{curr_time}_segment_{args.algorithm[0]}.stats")
         print(s.getvalue())
 
         print(f"\nSaved these stats to {curr_time}_segment.stats.")
-
-

@@ -11,12 +11,12 @@ from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
 
 
-def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
+def create_dataset_pv(folder: str) -> Dict[Tuple[float, int], Engine]:
     # initialising LSH hash functions
-    binary_proj_1 = RandomBinaryProjectionTree("rbpt", 10, 20)
+    binary_proj_1 = RandomBinaryProjectionTree("rbpt", 16, 20)
 
     vector_map: Dict[Tuple[float, int], Engine] = {}
-    available_pitch_vectors = pathlib.Path("mid/generated/pitch_vector").glob("**/*.pickle")
+    available_pitch_vectors = pathlib.Path(f"mid/generated/pitch_vector/{folder}").glob("**/*.pickle")
     num_vectors = 0
     for mid in tqdm(available_pitch_vectors, unit=" music pieces", desc="Progress"):
         with open(mid, "rb") as fh:
@@ -35,8 +35,8 @@ def create_dataset_pv() -> Dict[Tuple[float, int], Engine]:
     return vector_map
 
 
-def create_dataset_graph() -> List[MidiGraph]:
-    available_graphs = pathlib.Path("mid/generated/graph").glob("**/*.gpickle")
+def create_dataset_graph(folder: str) -> List[MidiGraph]:
+    available_graphs = pathlib.Path(f"mid/generated/graph/{folder}").glob("**/*.gpickle")
     graphs = []
     for gpickle in tqdm(available_graphs, unit=" music pieces", desc="Progress"):
         with open(gpickle, "rb") as fh:

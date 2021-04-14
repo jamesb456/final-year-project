@@ -1,6 +1,7 @@
 import datetime
 import json
 import time
+import argparse
 
 import grpc
 import pandas as pd
@@ -25,8 +26,12 @@ if __name__ == '__main__':
     curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
     channel = grpc.insecure_channel('localhost:8007')
     stub = QueryHandlerStub(channel)
-    query = "mid/generated/graph/ashover8/midi_segments/segment_0.mid"
-    print(f"Asking server for similarity rankings for {query} with notes from track 0")
+    query = "mid/queries/nottingham_query_indexed_graph/ashover6_102400.mid"
+    dataset_graph = "nottingham_graph_chords"
+    dataset_pv = "nottingham_pv"
+
+    print(f"Asking server for similarity rankings for {query} with notes from track 0 "
+          f" (and chord track 1 if relevant)")
 
     print("Pitch Vector Algorithm")
     response_vec = stub.QueryPitchVector(VectorArgs(query_mid=query, melody_track=0))

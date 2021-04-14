@@ -9,16 +9,16 @@ from project.algorithms.create_datasets import create_dataset_pv, create_dataset
 
 
 class QueryServicer(query_handler_pb2_grpc.QueryHandlerServicer):
-    def __init__(self):
+    def __init__(self, graph_dataset: str, pv_dataset: str):
         print("Initialising Pitch Vector Dataset")
         pv_dataset_start = time.time()
-        self.vector_dataset = create_dataset_pv()
+        self.vector_dataset = create_dataset_pv(pv_dataset)
         pv_dataset_end = time.time()
         print(f"Vector dataset loaded. It took {pv_dataset_end - pv_dataset_start}s")
 
         print("Loading Graph Dataset")
         graph_dataset_start = time.time()
-        self.graph_dataset = create_dataset_graph()
+        self.graph_dataset = create_dataset_graph(graph_dataset)
         graph_dataset_end = time.time()
         print(f"Graph dataset loaded. It took {graph_dataset_end - graph_dataset_start}s")
 

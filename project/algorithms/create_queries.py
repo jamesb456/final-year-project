@@ -7,7 +7,6 @@ from project.algorithms.core.note_segment import NoteSegment
 from project.algorithms.core.time_segmenter import TimeSegmenter
 from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 
-
 from project.algorithms.query_creation.indexed_query_creator import IndexedQueryCreator
 
 
@@ -31,5 +30,5 @@ def create_modified_queries(algorithm: str, num_queries: int, dataset_location: 
 
 
 def create_random_queries(num_queries: int, dataset_location: str,
-                            melody_track: int, **kwargs) -> List[NoteSegment]:
+                          melody_track: int, **kwargs) -> List[NoteSegment]:
     pass

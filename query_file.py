@@ -1,6 +1,7 @@
 import argparse
 import io
 import cProfile
+import pathlib
 import pstats
 import time
 import datetime
@@ -18,23 +19,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Query the similarity of a MIDI file "
                                                  "to MIDI files already segmented ")
     parser.add_argument("midi_path", type=str, help="Path to query MIDI file")
+    parser.add_argument("dataset_folder", type=str, help="Which preprocessed dataset to use. This corresponds to a "
+                                                         "folder in mid/generated/<algorithm> containing the relevant "
+                                                         "files.")
     parser.add_argument("--algorithm",
                         default=["graph"],
                         nargs=1,
                         choices=["graph", "pitch_vector"],
                         help="Choose which algorithm to run. (default: %(default)s)")
+
     parser.add_argument("--melody_track", type=int, default=0,
                         help="The track that contains the query file's melody (default: %(default)s)")
+
     parser.add_argument("--chord_track", type=int, default=None,
                         help="The track that contains the query file's chords, if it exists (default: %(default)s)")
+
     parser.add_argument("--write_graphs", action="store_true", help="If set, writes the graphs containing "
                                                                     "the query core connected to the original, "
                                                                     "stored graphs. (this only is relevant for the "
                                                                     "graph based algorithm)")
+
     parser.add_argument("--use_minimum", action="store_true", help="If set, use the minimum path length between a query"
                                                                    " core and segments in the MIDI instead of the "
                                                                    "average (this only is relevant for the "
                                                                    "graph based algorithm)")
+
     parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
                                                                       "from python's cProfile module "
                                                                       "(default: %(default)s)")
@@ -42,12 +51,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
     if args.algorithm[0] == "graph":
         print("Graph algorithm chosen: initialising dataset")
-        graphs = create_dataset_graph()
+        graphs = create_dataset_graph(args.dataset_folder)
         print("Done. Querying starting...")
         query_graph(args.midi_path, args.melody_track, args.use_minimum, args.write_graphs, graphs, args.chord_track)
     elif args.algorithm[0] == "pitch_vector":
         print("Pitch Vector algorithm chosen: initialising dataset")
-        pv_collections = create_dataset_pv()
+        pv_collections = create_dataset_pv(args.dataset_folder)
         print("Done. Querying starting...")
         query_pitch_vector(args.midi_path, pv_collections, args.melody_track)
 
@@ -60,6 +69,7 @@ if __name__ == "__main__":
     ps = pstats.Stats(profile, stream=s).sort_stats(sortby)
     ps.print_stats()
     curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
-    ps.dump_stats(f"stats/{curr_time}_query.stats")
+    pathlib.Path(f"stats/{args.dataset_folder}").mkdir(parents=True, exist_ok=True)
+    ps.dump_stats(f"stats/{args.dataset_folder}/{curr_time}_query.stats")
     if args.show_profiling:
         print(s.getvalue())
