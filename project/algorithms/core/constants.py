@@ -1,3 +1,5 @@
+from enum import IntEnum
+
 TWELVE_NOTE_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 TWELVE_NOTE_SCALE_FLAT = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
 BEAT_STRENGTH_DICT = {
@@ -14,34 +16,54 @@ BEAT_STRENGTH_DICT = {
 
 
 }
+
+
+class Interval(IntEnum):
+    ROOT = 0
+    MIN_SECOND = 1
+    MAJ_SECOND = 2
+    MIN_THIRD = 3
+    MAJ_THIRD = 4
+    FOURTH = 5
+    DIM_FIFTH = 6
+    FIFTH = 7
+    MIN_SIXTH = 8
+    MAJ_SIXTH = 9
+    SEVENTH = 10
+    MAJ_SEVENTH = 11
+    OCTAVE = 12
+    FLAT_NINTH = 13
+    NINTH = 14
+
+
 CONSONANCE_SCORE_DICT = {
-    0: 1.0,
-    1: 0.2,
-    2: 0.2,
-    3: 0.75,
-    4: 0.75,
-    5: 0.3,
-    6: 0.5,
-    7: 0.75,
-    8: 0.4,
-    9: 0.4,
-    10: 0.5,
-    11: 0.2,
+    Interval.ROOT: 1.0,
+    Interval.MIN_SECOND: 0.2,
+    Interval.MAJ_SECOND: 0.2,
+    Interval.MIN_THIRD: 0.75,
+    Interval.MAJ_THIRD: 0.75,
+    Interval.FOURTH: 0.3,
+    Interval.DIM_FIFTH: 0.5,
+    Interval.FIFTH: 0.75,
+    Interval.MIN_SIXTH: 0.4,
+    Interval.MAJ_SIXTH: 0.4,
+    Interval.SEVENTH: 0.5,
+    Interval.MAJ_SEVENTH: 0.2,
 }
 
 FUNCTIONAL_SCORE_DICT = {
-    0: 1.0,
-    1: 0.2,
-    2: 0.5,
-    3: 0.4,
-    4: 0.4,
-    5: 0.8,
-    6: 0.3,
-    7: 0.9,
-    8: 0.1,
-    9: 0.6,
-    10: 0.7,
-    11: 0.7,
+    Interval.ROOT: 1.0,
+    Interval.MIN_SECOND: 0.2,
+    Interval.MAJ_SECOND: 0.5,
+    Interval.MIN_THIRD: 0.4,
+    Interval.MAJ_THIRD: 0.4,
+    Interval.FOURTH: 0.8,
+    Interval.DIM_FIFTH: 0.3,
+    Interval.FIFTH: 0.9,
+    Interval.MIN_SIXTH: 0.1,
+    Interval.MAJ_SIXTH: 0.6,
+    Interval.SEVENTH: 0.7,
+    Interval.MAJ_SEVENTH: 0.7,
 }
 
 

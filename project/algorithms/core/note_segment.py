@@ -1,18 +1,20 @@
-from typing import List, Optional, Tuple
+from collections import deque
+from typing import List, Optional, Tuple, Deque
 
 from mido import MidiFile, MidiTrack, Message
 
 from project.algorithms.core.midi_segment import MidiSegment
 from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
-from project.algorithms.core.midtools import get_track_signatures
+from project.algorithms.core.midtools import get_track_signatures, get_track_non_note_messages
 
 
 class NoteSegment(MidiSegment):
 
-    def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note]):
+    def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note], chord_track_ind: Optional[int] = None):
         super().__init__(file, melody_track_ind)
         self.notes = notes
+        self.chord_track_ind = chord_track_ind
         # precompute time and key signatures
         self.time_signature_events, self.key_signature_events = get_track_signatures(file.tracks[melody_track_ind])
 
@@ -30,34 +32,89 @@ class NoteSegment(MidiSegment):
         else:
             return None
 
+    @property
+    def _chord_track(self) -> Optional[MidiTrack]:
+        if self.chord_track_ind is None:
+            return None
+        else:
+            return self._file.tracks[self.chord_track_ind]
+
+    def _get_chord_non_note_messages(self) -> Deque[Tuple[int, Message]]:
+        if self._chord_track is None:
+            return deque()
+        else:
+            return get_track_non_note_messages(self._chord_track)
+
     def copy_notes_to_track(self, track: MidiTrack):
 
-        message_queue = self._get_melody_instructional_messages()
+        non_note_message_queue = self._get_melody_non_note_messages()
 
         # add the list of notes within the core as Midi messages
         current_meta_index = 0
         current_time = self.start_time
         for (index, note) in enumerate(self.notes):
             # add meta messages at the appropriate time
-            if message_queue[0][0] <= current_time:
-                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
-                    track.append(message_queue.popleft()[1])
+            if non_note_message_queue[0][0] <= current_time:
+                while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                    track.append(non_note_message_queue.popleft()[1])
 
             time_since_last_note = note.start_time - self.notes[index - 1].end_time if index != 0 else 0
             track.append(Message(type="note_on", note=note.pitch, velocity=127, channel=note.channel,
                                  time=time_since_last_note))
             current_time += time_since_last_note
 
-            if message_queue[0][0] <= current_time:
-                while len(message_queue) > 0 and message_queue[0][0] <= current_time:
-                    track.append(message_queue.popleft()[1])
+            if non_note_message_queue[0][0] <= current_time:
+                while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                    track.append(non_note_message_queue.popleft()[1])
 
             track.append(Message(type="note_on", note=note.pitch, velocity=0, channel=note.channel,
                                  time=note.duration))  # running status note off
             current_time += note.duration
         # add remaining meta messages
-        while len(message_queue) > 0:
-            track.append(message_queue.popleft()[1])
+        while len(non_note_message_queue) > 0:
+            track.append(non_note_message_queue.popleft()[1])
+
+    def copy_chords_to_track(self, track: MidiTrack):
+        if self._chord_track is None:
+            return
+        else:
+            non_note_message_queue = self._get_chord_non_note_messages()
+            current_meta_index = 0
+            current_time = self.start_time
+            for (index, note) in enumerate(self.notes):
+                # add meta messages at the appropriate time
+                if len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                    while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                        track.append(non_note_message_queue.popleft()[1])
+
+                time_since_last_note = note.start_time - self.notes[index - 1].end_time if index != 0 else 0
+
+                midi_values = note.chord.to_midi_values() if note.chord is not None else []
+
+                if len(midi_values) > 0:
+                    track.append(Message(type="note_on", note=midi_values[0], velocity=127, channel=note.channel,
+                                         time=time_since_last_note))
+                    for chord_pitch in midi_values[1:]:
+                        track.append(Message(type="note_on", note=chord_pitch, velocity=127, channel=note.channel,
+                                             time=0))
+
+                current_time += time_since_last_note
+
+                if len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                    while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
+                        track.append(non_note_message_queue.popleft()[1])
+
+                if len(midi_values) > 0:
+                    track.append(Message(type="note_on", note=midi_values[0], velocity=0, channel=note.channel,
+                                         time=note.duration))  # running status note off
+                    for chord_pitch in midi_values[1:]:
+                        track.append(Message(type="note_on", note=chord_pitch, velocity=0, channel=note.channel,
+                                             time=0))
+
+                current_time += note.duration
+            # add remaining meta messages
+            while len(non_note_message_queue) > 0:
+                track.append(non_note_message_queue.popleft()[1])
 
     def __get_time_signature_at(self, time: int) -> Tuple[int, TimeSignature]:
         last_time_sig_event = 0, TimeSignature.default()
@@ -102,6 +159,9 @@ class NoteSegment(MidiSegment):
         # add all the meta messages (e.g. time signature, instrument)
         new_track = new_file.add_track(self._melody_track.name)
         self.copy_notes_to_track(new_track)
+        if self._chord_track is not None:
+            new_chord_track = new_file.add_track(self._chord_track.name)
+            self.copy_chords_to_track(new_chord_track)
         new_file.save(filename=filepath)
 
     def save_segment(self, filepath):
@@ -211,3 +271,6 @@ class NoteSegment(MidiSegment):
 
     def __str__(self):
         return str(self.__dict__)
+
+    def __len__(self):
+        return len(self.notes)

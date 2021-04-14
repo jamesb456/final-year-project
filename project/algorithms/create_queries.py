@@ -12,17 +12,17 @@ from project.algorithms.query_creation.indexed_query_creator import IndexedQuery
 
 
 def create_indexed_queries(algorithm: str, num_queries: int, dataset_location: str,
-                           melody_track: int, **kwargs) -> List[NoteSegment]:
+                           melody_track: int, rng: Optional[int], **kwargs) -> List[NoteSegment]:
     if algorithm == "graph":
-        creator = IndexedQueryCreator(LbdmSegmenter())
+        creator = IndexedQueryCreator(LbdmSegmenter(), rng)
     elif algorithm == "pitch_vector":
-        creator = IndexedQueryCreator(TimeSegmenter())
+        creator = IndexedQueryCreator(TimeSegmenter(), rng)
     else:
         sys.stderr.write(f"Error: algorithm {algorithm} is unknown, so can't create segments for it.")
         sys.stderr.flush()
         return []
 
-    return creator.create_queries(dataset_location, num_queries, melody_track)
+    return creator.create_queries(dataset_location, num_queries, melody_track, **kwargs["segmenter_args"])
 
 
 def create_modified_queries(algorithm: str, num_queries: int, dataset_location: str,

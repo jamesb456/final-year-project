@@ -33,3 +33,6 @@ class PitchVectorSegment(MidiSegment):
 
     def __repr__(self):
         return self.__str__()
+
+    def __len__(self):
+        return len(self.pitch_vector)

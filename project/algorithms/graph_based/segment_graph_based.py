@@ -1,3 +1,4 @@
+import json
 import pathlib
 import sys
 import time
@@ -6,6 +7,7 @@ from typing import Optional
 
 from mido import MidiFile
 
+from project.algorithms.core.chord import Chord
 from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 from project.algorithms.core.midtools import is_note_on, is_note_off
@@ -66,6 +68,7 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
                     graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
                                    f2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
+        segments_and_indices = reduced_segments
         i += 1
 
     print("Done reducing as all segments have at most 1 note.")
@@ -73,13 +76,14 @@ def segment_graph(midi_path: str, melody_track: int, chord_track: Optional[int],
     with open(str(pathlib.Path(f"{mid_location}/graph.gpickle")), "wb") as fh:
         pickle.dump(graph, fh, protocol=pickle.HIGHEST_PROTOCOL)
     print("Graph saved")
-    combined_dict = {}
-    for (iteration, r_segments) in segment_dict.items():
-        for (seg_ind, segment) in r_segments:
-            if seg_ind not in combined_dict.keys():
-                combined_dict[seg_ind] = []
-            combined_dict[seg_ind].append(segment)
+
     if save_combined:
+        combined_dict = {}
+        for (iteration, r_segments) in segment_dict.items():
+            for (seg_ind, segment) in r_segments:
+                if seg_ind not in combined_dict.keys():
+                    combined_dict[seg_ind] = []
+                combined_dict[seg_ind].append(segment)
         print("--saved_combined specified: saving combined segments...")
         for (segment_index, indexed_segments) in combined_dict.items():
             new_file = MidiFile(**indexed_segments[0].get_file_metadata())

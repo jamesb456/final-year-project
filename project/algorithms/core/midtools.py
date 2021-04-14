@@ -3,12 +3,12 @@ Common operation on MIDI files and objects
 """
 import mido
 
-from typing import Dict, List, Tuple, Optional
-from collections import OrderedDict
+from typing import Dict, List, Tuple, Optional, Deque
+from collections import OrderedDict, deque
 
 from mido import MidiTrack, MidiFile, Message, bpm2tempo, tick2second
 
-from project.algorithms.graph_based.chord import Chord
+from project.algorithms.core.chord import Chord
 from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
@@ -125,7 +125,7 @@ def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
     # TODO: change to also take into account that chords have an explicit time that they stop playing
     i = 0
     for (time, note_list) in on_dict.items():
-        chords.append((Chord.from_midi_values(*note_list), time, end_times[i]))
+        chords.append((Chord(*note_list), time, end_times[i]))
         i += 1
     return chords
 
@@ -167,7 +167,8 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
         # naive (this is inefficient)
         for chord, chord_start, chord_end in chord_timeline:
             for note in notes:
-                if note.start_time >= chord_start and note.end_time <= chord_end:
+                if note.start_time >= chord_start:
+                    # test: and note.end_time <= chord_end
                     note.chord = chord
 
     return notes
@@ -253,3 +254,14 @@ def get_track_tempo_changes(track: MidiTrack) -> List[Tuple[int, int]]:
             tempo_changes.append((time, message.tempo))
 
     return tempo_changes
+
+
+def get_track_non_note_messages(track: MidiTrack) -> Deque[Tuple[int, Message]]:
+    time = 0
+    meta_messages = deque()
+    for message in track:
+        if message.is_meta or message.type == "control_change" or message.type == "program_change":
+            meta_messages.append((time + message.time, message))
+        time += message.time
+
+    return meta_messages

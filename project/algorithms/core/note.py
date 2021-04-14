@@ -3,7 +3,7 @@ from math import floor
 from typing import Optional
 
 import project.algorithms.core.constants as constants
-from project.algorithms.graph_based.chord import Chord
+from project.algorithms.core.chord import Chord
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 
@@ -60,15 +60,18 @@ class Note:
         if self.chord is None:
             return 0.5
         else:
-            note_tone = self.pitch % constants.OCTAVE_SEMITONE_COUNT
-            interval = abs(self.chord.root_tone - note_tone)
+            interval = abs(
+                (self.chord.root_tone % constants.OCTAVE_SEMITONE_COUNT) -
+                (self.pitch % constants.OCTAVE_SEMITONE_COUNT)
+             )
             return constants.CONSONANCE_SCORE_DICT[interval]
 
     def get_functional_score(self, key_signature: KeySignature):
         if self.chord is None:  # if there is no chord associated with this note, return an average strength
             return 0.5
         else:
-            return constants.FUNCTIONAL_SCORE_DICT[abs(key_signature.note - self.chord.root_tone)]
+            return constants.FUNCTIONAL_SCORE_DICT[abs(key_signature.note -
+                                                       (self.chord.root_tone % constants.OCTAVE_SEMITONE_COUNT))]
 
     def normalize(self, mean_pitch: float, start_offset: int, sequence_length: int) -> "Note":
         pitch = self.pitch - mean_pitch

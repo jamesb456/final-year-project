@@ -1,4 +1,5 @@
 import argparse
+import json
 import sys
 import time
 import datetime
@@ -11,6 +12,7 @@ from typing import Optional
 from multiprocessing import Pool
 
 import project.algorithms.core.constants as constants
+from project.algorithms.core.chord import Chord
 from project.algorithms.graph_based.segment_graph_based import segment_graph
 from project.algorithms.pitch_vector.segment_pitch_vector import segment_pitch_vector
 
@@ -60,27 +62,39 @@ if __name__ == '__main__':
         graph_start = time.time()
         graph_func = partial(segment_graph, melody_track=args.melody_track, chord_track=args.chord_track,
                              save_combined=args.save_combined)
-        with Pool(args.n_processes) as p:
-            errors = p.map(graph_func, paths)
+
+        errors = []
+        if args.n_processes == 1:
+            for path in paths:
+                error = graph_func(path)
+                errors.append(error)
+        else:
+            with Pool(args.n_processes) as p:
+                errors = p.map(graph_func, paths)
+
         for error in errors:
             if error != 0:
                 err_count += 1
             count += 1
-
         graph_end = time.time()
         time_taken = graph_end - graph_start
 
     elif args.algorithm[0] == "pitch_vector":
         vector_start = time.time()
         pitch_func = partial(segment_pitch_vector, melody_track=args.melody_track)
+        errors = []
+        if args.n_processes == 1:
+            for path in paths:
+                error = pitch_func(paths)
+                errors.append(error)
+        else:
+            with Pool(args.n_processes) as p:
+                errors = p.map(pitch_func, paths)
 
-        with Pool(args.n_processes) as p:
-            errors = p.map(pitch_func, paths)
         for error in errors:
             if error != 0:
                 err_count += 1
             count += 1
-
         vector_end = time.time()
         time_taken = vector_end - vector_start
 
@@ -102,3 +116,5 @@ if __name__ == '__main__':
         print(s.getvalue())
 
         print(f"\nSaved these stats to {curr_time}_segment.stats.")
+
+

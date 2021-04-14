@@ -8,4 +8,4 @@ from project.algorithms.core.segmenter import Segmenter
 
 class TimeSegmenter(Segmenter):
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[MidiSegment]:
-        pass
+        track = mid.tracks[track_index]

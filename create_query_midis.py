@@ -14,6 +14,9 @@ if __name__ == "__main__":
                                                   "(default: %(default)s)", type=int, default=400)
     parser.add_argument("output_name", help="The name of the folder these MIDIs should be placed in. This folder "
                                             "will be created in mid\\queries")
+    parser.add_argument("--rng_seed", help="The seed to be used for any random number generation "
+                                           "(default: %(default)s)", default=None)
+
     strategies = parser.add_subparsers(title="query_strategies", dest="query_strategy", required=True)
 
     indexed_parser = strategies.add_parser("indexed",
@@ -39,8 +42,13 @@ if __name__ == "__main__":
     indexed_parser.add_argument("--melody_track",
                                 type=int,
                                 default=0,
-                                help="The MIDI track to create the segments from")
+                                help="The MIDI track to create the segments from. (default: %(default)s)")
 
+    indexed_parser.add_argument("--chord_track",
+                                type=int,
+                                default=None,
+                                help="The track containing the chords in the MIDI file,"
+                                     " if such a track exists. (default: %(default)s) ")
     # modified_ind parser arguments
     # TODO: complete this
     modified_ind_parser.add_argument("--algorithm",
@@ -52,8 +60,6 @@ if __name__ == "__main__":
     # TODO: complete this
 
     args = parser.parse_args()
-
-
     output_path = pathlib.Path(f"mid/queries/{args.output_name}")
     try:
         output_path.mkdir(parents=True, exist_ok=False)
@@ -66,8 +72,11 @@ if __name__ == "__main__":
     segments = []
     if args.query_strategy == "indexed":
         print("Indexed segments chosen")
+        segmenter_args = {}
+        if args.chord_track is not None:
+            segmenter_args["chord_track"] = args.chord_track
         segments = create_indexed_queries(args.algorithm[0], args.number_of_queries, args.mid_dataset,
-                                          args.melody_track)
+                                          args.melody_track, args.rng_seed, segmenter_args=segmenter_args)
     elif args.query_strategy == "indexed_mod":
         print("Indexed (modified) segments chosen")
         raise NotImplementedError("Not implemented yet")
@@ -75,7 +84,7 @@ if __name__ == "__main__":
         print("Random segments chosen")
         raise NotImplementedError("Not implemented yet")
     else:
-        raise ValueError(f"Unkown querying strategy {args.query_strategy}")
+        raise ValueError(f"Unknown querying strategy {args.query_strategy}")
 
     if len(segments) > 0:
         print(f"Chosen {len(segments)} segments from the list. Saving them now:")

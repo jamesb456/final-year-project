@@ -1,10 +1,11 @@
 import pathlib
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Deque, Tuple
+from typing import Deque, Tuple, Optional
 
 from mido import MidiFile, MidiTrack, Message
 
+from project.algorithms.core.midtools import get_track_non_note_messages
 
 class MidiSegment(ABC):
     def __init__(self, file: MidiFile, melody_track_ind: int):
@@ -23,15 +24,8 @@ class MidiSegment(ABC):
     def filename(self) -> str:
         return str(pathlib.Path(self._file.filename).stem)
 
-    def _get_melody_instructional_messages(self) -> Deque[Tuple[int, Message]]:
-        time = 0
-        meta_messages = deque()
-        for message in self._melody_track:
-            if message.is_meta or message.type == "control_change" or message.type == "program_change":
-                meta_messages.append((time + message.time, message))
-            time += message.time
-
-        return meta_messages
+    def _get_melody_non_note_messages(self) -> Deque[Tuple[int, Message]]:
+        return get_track_non_note_messages(self._melody_track)
 
     def get_file_metadata(self):
         """
@@ -57,4 +51,8 @@ class MidiSegment(ABC):
 
     @abstractmethod
     def save_as_midi(self, filepath):
+        pass
+
+    @abstractmethod
+    def __len__(self):
         pass

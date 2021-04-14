@@ -24,11 +24,11 @@ class LbdmSegmenter(Segmenter):
 
         # determine which track to core
         track: MidiTrack = mid.tracks[track_index]
+        chord_track_ind = None
         chord_track = None
-
         if "chord_track" in kwargs.keys() and kwargs["chord_track"] is not None:
-            print("--chord_track specified")
-            chord_track = mid.tracks[kwargs["chord_track"]]
+            chord_track_ind = kwargs["chord_track"]
+            chord_track = mid.tracks[chord_track_ind]
 
         # get list of notes within the track
         timeline = get_note_timeline(track, chord_track)
@@ -45,7 +45,8 @@ class LbdmSegmenter(Segmenter):
             if timeline[profile_index[0]].end_time < mid.ticks_per_beat * 4:
                 pass
             elif boundary_strength > self.threshold:
-                segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:profile_index[0] + 1]))
+                segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:profile_index[0] + 1]
+                                            , chord_track_ind=chord_track_ind))
                 last_segmentation_index = profile_index[0]
 
         # get last few notes
