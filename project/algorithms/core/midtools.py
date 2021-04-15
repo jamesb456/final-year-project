@@ -68,7 +68,7 @@ def get_type_tally(mid: MidiFile) -> Dict[str, int]:
     return type_dict
 
 
-def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[int, int]:
+def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]:
     start_offset = 0
     tempo = bpm2tempo(120)
     first_note_on_ind = 0
@@ -83,7 +83,7 @@ def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[int, int]:
     return start_offset, first_note_on_ind
 
 
-def get_end_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[int, int]:
+def get_end_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]:
     tempo = bpm2tempo(120)
     end_offset = 0
     last_note_off = 0
@@ -175,7 +175,8 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
 
 
 def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
-                            start: float = 0, end: float = float("inf")) -> List[Note]:
+                            start: float = 0, end: float = float("inf"), allow_smaller: bool = True,
+                            use_midi_times: bool = False) -> List[Note]:
     """
     Return all notes within the time (in seconds) range [start,end]
 
@@ -184,17 +185,25 @@ def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
         ticks_per_beat: the number of Midi message "ticks" per quarter note
         start: The beginning of the time range (default: 0)
         end:  The end of the time range (default: inf (to the end of the track))
-
+        allow_smaller: Whether to allow sets of notes that are smaller than the time range (for example, if the time range exceed the end of the song) (default: True). If False, returns the empty list [] if end goes over the end of the song
+        use_midi_times: Whether to save notes with their MIDI tick values instead of the time in seconds (default: False)
     Returns:
         A list of notes in the time range [start,end]
 
     """
+    if not allow_smaller:
+        if end > get_end_offset(track, ticks_per_beat)[0]:
+            return []
+
     notes = []
     last_note_dict = {}
     curr_time = 0
+    curr_ticks = 0
     curr_tempo = bpm2tempo(120)
+
     for msg in track:
         curr_time += tick2second(msg.time, ticks_per_beat, curr_tempo)
+        curr_ticks += msg.time
         if msg.type == "set_tempo":
             curr_tempo = msg.tempo
 
@@ -203,17 +212,29 @@ def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
         elif curr_time > end:
             break
         elif is_note_on(msg):
-            notes.append(Note(curr_time, -1, msg.note, msg.channel))
+            if use_midi_times:
+                notes.append(Note(curr_ticks, -1, msg.note, msg.channel))
+            else:
+                notes.append(Note(curr_time, -1, msg.note, msg.channel))
             last_note_dict[msg.note] = len(notes) - 1
         elif is_note_off(msg):
             if msg.note in last_note_dict.keys():
-                notes[last_note_dict[msg.note]].end_time = curr_time  # set the last note's end time
+                if use_midi_times:
+                    notes[last_note_dict[msg.note]].end_time = curr_ticks
+                else:
+                    notes[last_note_dict[msg.note]].end_time = curr_time  # set the last note's end time
             else:
-                notes.append(Note(float(start), curr_time, msg.note, msg.channel))
-                # Say note starts at beginning of time window
+                if use_midi_times:
+                    notes.append(Note(curr_ticks - msg.time, curr_ticks, msg.note, msg.channel))
+                else:
+                    notes.append(Note(float(start), curr_time, msg.note, msg.channel))
+
     if len(notes) > 0:  # limit note end to end of time period
         if notes[-1].end_time == -1:
-            notes[-1].end_time = curr_time
+            if use_midi_times:
+                notes[-1].end_time = curr_ticks
+            else:
+                notes[-1].end_time = curr_time
 
     return notes
 

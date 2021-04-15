@@ -5,6 +5,7 @@ import pathlib
 import pstats
 import time
 import datetime
+import re
 
 from project.algorithms.graph_based.query_graph_based import query_graph
 from project.algorithms.pitch_vector.query_pitch_vector import query_pitch_vector

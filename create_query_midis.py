@@ -47,8 +47,15 @@ if __name__ == "__main__":
     indexed_parser.add_argument("--chord_track",
                                 type=int,
                                 default=None,
-                                help="The track containing the chords in the MIDI file,"
-                                     " if such a track exists. (default: %(default)s) ")
+                                help="The track containing the chords in the MIDI file (useful only for the graph"
+                                     "algorithm, if such a track exists. (default: %(default)s) ")
+
+    indexed_parser.add_argument("--time",
+                                type=float,
+                                default=3,
+                                help="If the pitch vector algorithm is chosen, the length (in seconds) of each segment "
+                                     "(default: %(default)ss)")
+
     # modified_ind parser arguments
     # TODO: complete this
     modified_ind_parser.add_argument("--algorithm",
@@ -75,6 +82,10 @@ if __name__ == "__main__":
         segmenter_args = {}
         if args.chord_track is not None:
             segmenter_args["chord_track"] = args.chord_track
+
+        if args.time is not None:
+            segmenter_args["time"] = args.time
+
         segments = create_indexed_queries(args.algorithm[0], args.number_of_queries, args.mid_dataset,
                                           args.melody_track, args.rng_seed, segmenter_args=segmenter_args)
     elif args.query_strategy == "indexed_mod":

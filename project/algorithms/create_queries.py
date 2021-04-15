@@ -15,12 +15,11 @@ def create_indexed_queries(algorithm: str, num_queries: int, dataset_location: s
     if algorithm == "graph":
         creator = IndexedQueryCreator(LbdmSegmenter(), rng)
     elif algorithm == "pitch_vector":
-        creator = IndexedQueryCreator(TimeSegmenter(), rng)
+        creator = IndexedQueryCreator(TimeSegmenter(kwargs["segmenter_args"]["time"]), rng)
     else:
         sys.stderr.write(f"Error: algorithm {algorithm} is unknown, so can't create segments for it.")
         sys.stderr.flush()
         return []
-
     return creator.create_queries(dataset_location, num_queries, melody_track, **kwargs["segmenter_args"])
 
 
