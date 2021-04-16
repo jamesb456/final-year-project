@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
     query_times = []
     ranks = []
+    no_ranks = []
     for mid in tqdm(available_mids):
         if args.algorithm[0] == "graph":
             if args.chord_track is None:
@@ -87,8 +88,11 @@ if __name__ == '__main__':
         if len(mid_position) > 0:  # if it was in the list of candidates
             rank = len(df_response.index) - mid_position.item()
             ranks.append(rank)
+        else:
+            no_ranks.append(0)
 
-    ranks = pd.Series(ranks, name="")
+    ranks = pd.Series(ranks)
+    no_ranks = pd.Series(no_ranks)
     query_times = pd.Series(query_times)
     mean_query_time = query_times.mean()
     len_ranks = len(ranks.index)
@@ -97,12 +101,12 @@ if __name__ == '__main__':
     top_3 = len(ranks[ranks <= 3].index) / len_ranks
     top_20 = len(ranks[ranks <= 20].index) / len_ranks
 
-    mrr = (1 / ranks).mean()
+    rr = (1 / ranks).append(no_ranks)
+    mrr = rr.mean()
     print(f"Mean Reciprocal Rank is {mrr}")
     print(f"Top-1 hit rate is {top_1}")
     print(f"Top-3 hit rate is {top_3}")
     print(f"Top-20 hit rate is {top_20}")
-
 
     # df_vec = pd.DataFrame(list(response_vec.ranking.items()), columns=["MIDI name", "Similarity"])
     # df_graph = pd.DataFrame(list(response_graph.ranking.items()), columns=["MIDI name", "Similarity"])

@@ -4,9 +4,11 @@ mido
 networkx
 pydot
 pygraphviz
-cython
 pandas
 grpcio
 grpcio-tools
 tqdm
 nearpy
+jupyterlab
+notebook
+music21

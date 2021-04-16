@@ -44,6 +44,9 @@ if __name__ == "__main__":
                                                                    " core and segments in the MIDI instead of the "
                                                                    "average (this only is relevant for the "
                                                                    "graph based algorithm)")
+    parser.add_argument("--pv_veclength", type=int, default=16,
+                        help="The size of the projection vectors used for the locality senstive hashing algorithm "
+                             "(only relevant to the pitch vector algorithm) (default: %(default)s)")
 
     parser.add_argument("--show_profiling", action="store_true", help="If set, shows profiling information collected "
                                                                       "from python's cProfile module "
@@ -57,7 +60,7 @@ if __name__ == "__main__":
         query_graph(args.midi_path, args.melody_track, args.use_minimum, args.write_graphs, graphs, args.chord_track)
     elif args.algorithm[0] == "pitch_vector":
         print("Pitch Vector algorithm chosen: initialising dataset")
-        pv_collections = create_dataset_pv(args.dataset_folder)
+        pv_collections = create_dataset_pv(args.dataset_folder, args.pv_veclength)
         print("Done. Querying starting...")
         query_pitch_vector(args.midi_path, pv_collections, args.melody_track)
 

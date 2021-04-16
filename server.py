@@ -12,11 +12,15 @@ if __name__ == "__main__":
                                                         "when the graph algorithm is being used")
     parser.add_argument("pv_dataset", type=str, help="The dataset of segmented pieces of music to use "
                                                      "when the pitch vector algorithm is being used")
+
+    parser.add_argument("--pv_veclength", type=int, default=16,
+                        help="The size of the projection vectors used for the locality senstive hashing algorithm "
+                             "(default: %(default)s)")
     args = parser.parse_args()
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
     query_handler_pb2_grpc.add_QueryHandlerServicer_to_server(
-        QueryServicer(args.graph_dataset, args.pv_dataset), server)
+        QueryServicer(args.graph_dataset, args.pv_dataset, args.pv_veclength), server)
     server.add_insecure_port('[::]:8007')  # ipv6
     server.start()
     server.wait_for_termination()

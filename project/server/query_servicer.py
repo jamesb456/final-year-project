@@ -9,10 +9,10 @@ from project.algorithms.create_datasets import create_dataset_pv, create_dataset
 
 
 class QueryServicer(query_handler_pb2_grpc.QueryHandlerServicer):
-    def __init__(self, graph_dataset: str, pv_dataset: str):
+    def __init__(self, graph_dataset: str, pv_dataset: str, pv_veclength: int):
         print("Initialising Pitch Vector Dataset")
         pv_dataset_start = time.time()
-        self.vector_dataset = create_dataset_pv(pv_dataset)
+        self.vector_dataset = create_dataset_pv(pv_dataset, pv_veclength)
         pv_dataset_end = time.time()
         print(f"Vector dataset loaded. It took {pv_dataset_end - pv_dataset_start}s")
 

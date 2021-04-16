@@ -11,9 +11,9 @@ from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.pitch_vector.pitch_vector_collection import PitchVectorCollection
 
 
-def create_dataset_pv(folder: str) -> Dict[Tuple[float, int], Engine]:
+def create_dataset_pv(folder: str, veclength: int) -> Dict[Tuple[float, int], Engine]:
     # initialising LSH hash functions
-    binary_proj_1 = RandomBinaryProjectionTree("rbpt", 16, 20)
+    binary_proj_1 = RandomBinaryProjectionTree("rbpt", veclength, 20)
 
     vector_map: Dict[Tuple[float, int], Engine] = {}
     available_pitch_vectors = pathlib.Path(f"mid/generated/pitch_vector/{folder}").glob("**/*.pickle")
