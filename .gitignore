@@ -19,3 +19,5 @@ error.log
 /mid/wikifonia-midi/
 /mid/queries/
 /mid/Wikifonia/
+
+.ipynb_checkpoints/demo-checkpoint.ipynb
