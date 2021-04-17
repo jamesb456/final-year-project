@@ -17,6 +17,7 @@ class NoteSegment(MidiSegment):
         self.chord_track_ind = chord_track_ind
         # precompute time and key signatures
         self.time_signature_events, self.key_signature_events = get_track_signatures(file.tracks[melody_track_ind])
+        self.duration_transform = 1
 
     @property
     def start_time(self) -> Optional[float]:
@@ -48,11 +49,17 @@ class NoteSegment(MidiSegment):
     def copy_notes_to_track(self, track: MidiTrack):
 
         non_note_message_queue = self._get_melody_non_note_messages()
+        if self.duration_transform != 1:
+            temp_queue = deque()
+            for time, msg in non_note_message_queue:
+                temp_queue.append((int(time * self.duration_transform), msg))
 
         # add the list of notes within the core as Midi messages
         current_meta_index = 0
         current_time = self.start_time
         for (index, note) in enumerate(self.notes):
+            note.start_time *= self.duration_transform
+            note.end_time *= self.duration_transform
             # add meta messages at the appropriate time
             if non_note_message_queue[0][0] <= current_time:
                 while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
@@ -268,6 +275,20 @@ class NoteSegment(MidiSegment):
                 weight += ((strongest_total - prev_strongest_total) / 3)
 
         return weight, NoteSegment(self._file, self.melody_track_ind, reduced_notes)
+
+    def transpose(self, transpose_pitch: int):
+        for note in self.notes:
+            note.pitch += transpose_pitch
+
+    def elongate_notes(self, factor: float = 1):
+        self.duration_transform = factor
+
+    def add_note(self, note: Note, index: int):
+        self.notes.insert(index, note)
+
+    def remove_note(self, index: int):
+        if index in range(len(self.notes)):
+            del self.notes[index]
 
     def __str__(self):
         return str(self.__dict__)

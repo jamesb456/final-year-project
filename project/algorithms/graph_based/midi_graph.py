@@ -31,6 +31,11 @@ class MidiGraph:
     def add_edge(self, f1: str, f2: str, weight: float = 1):
         self.__graph.add_edge(pathlib.Path(f1).stem, pathlib.Path(f2).stem, label=weight)
 
+    def draw(self, path: str):
+        agraph = networkx.drawing.nx_agraph.to_agraph(self.__graph)
+        agraph.layout("dot")
+        agraph.draw(path)
+
     def get_copy_of_graph(self) -> networkx.Graph:
         return self.__graph.copy()
 
