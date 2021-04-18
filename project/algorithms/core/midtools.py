@@ -346,20 +346,21 @@ def transpose_keysig_up(msg) -> Optional[MetaMessage]:
 def transpose_keysig_down(msg) -> Optional[MetaMessage]:
     if msg.type == "key_signature":
         new_message = MetaMessage("key_signature")
-        new_message.time = msg
+        new_message.time = msg.time
+        new_key = ""
 
         pitch_class, tonality, minor_str = get_note_parts(note_str=msg.key)
         if tonality == "#":
-            new_message.key = msg.pitch_class  # just need to add one semitone e.g Ab -> A
+            new_key = msg.pitch_class  # just need to remove one semitone e.g G# -> G
         elif tonality == "b":
-            new_message.key = get_lower_pitch(pitch_class)
+            new_key = get_lower_pitch(pitch_class)
         else:
             if pitch_class == "F" or pitch_class == "C":
-                new_message.key = get_lower_pitch(pitch_class)
+                new_key = get_lower_pitch(pitch_class)
             else:
-                new_message.key = get_correct_enharmonic(pitch_class + "b")
+                new_key = pitch_class + "b"
 
-        msg.key += minor_str
+        new_message.key = get_correct_enharmonic(new_key) + minor_str
         return new_message
     else:
         return None
