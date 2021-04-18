@@ -94,7 +94,7 @@ if __name__ == "__main__":
                                           " (default: %(default)s)")
 
     modified_ind_parser.add_argument("--extra_notes",
-                                     type=float,
+                                     type=int,
                                      default=0,
                                      help=" The number of extra noise notes to be added to each segment. The pitch"
                                           " of these notes is taken from a normal distribution with the mean pitch of "
@@ -102,7 +102,7 @@ if __name__ == "__main__":
                                           " (default: %(default)s)")
 
     modified_ind_parser.add_argument("--removed_notes",
-                                     type=float,
+                                     type=int,
                                      default=0,
                                      help=" The number of removed notes to be removed from each segment. "
                                           " (default: %(default)s)")
@@ -147,4 +147,6 @@ if __name__ == "__main__":
     if len(segments) > 0:
         print(f"Chosen {len(segments)} segments from the list. Saving them now:")
         for segment in tqdm(segments, "Saving segments"):
+            for note in segment.notes:
+                assert note.duration >= 0
             segment.save_as_midi(f"{output_path}/{segment.filename}_{segment.start_time}.mid")

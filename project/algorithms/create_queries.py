@@ -52,15 +52,18 @@ def create_modified_queries(algorithm: str, num_queries: int, dataset_location: 
         # sample new notes from a normal distribution based on the original segments mean pitch
         # so the notes are "realistic"
         if extra_notes > 0:
-            mean_pitch = query.get_mean_pitch()
-            sigma_pitch = constants.OCTAVE_SEMITONE_COUNT / 2
+            mean_pitch = int(query.get_mean_pitch())
+            range_pitch = constants.OCTAVE_SEMITONE_COUNT // 2
 
-            added_notes = rand.normal(mean_pitch, sigma_pitch, extra_notes)
+            added_notes = rand.integers(max(0, mean_pitch - range_pitch), min(127, mean_pitch + range_pitch),
+                                        extra_notes)
             added_notes_indices = rand.integers(0, len(query), extra_notes)
             added_notes_length = rand.integers(1, 3, extra_notes) * int(query.ticks_per_beat / 2)
 
             for j in range(extra_notes):
-                query.add_note(added_notes[j], added_notes_length[j], added_notes_indices[j])
+                query.add_note(int(added_notes[j]), int(added_notes_length[j]), added_notes_indices[j])
+
+            print(query.notes)
 
         query.change_duration_transform(note_duration_transform)
         query.transpose(transpose)

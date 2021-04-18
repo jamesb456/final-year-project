@@ -75,7 +75,7 @@ class NoteSegment(MidiSegment):
             note.start_time = int(note.start_time * self.duration_transform)
             note.end_time = int(note.end_time * self.duration_transform)
             # add meta messages at the appropriate time
-            if non_note_message_queue[0][0] <= current_time:
+            if len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
                 while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
                     track.append(non_note_message_queue.popleft()[1])
 
@@ -84,7 +84,7 @@ class NoteSegment(MidiSegment):
                                  time=time_since_last_note))
             current_time += time_since_last_note
 
-            if non_note_message_queue[0][0] <= current_time:
+            if len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
                 while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
                     track.append(non_note_message_queue.popleft()[1])
 
@@ -326,8 +326,8 @@ class NoteSegment(MidiSegment):
             for note in self.notes[index:]:
                 note.start_time += tick_length
                 note.end_time += tick_length
-            self.notes.insert(index, Note(self.notes[index].start_time - tick_length,
-                                          self.notes[index].end_time - tick_length,
+            self.notes.insert(index, Note(int(self.notes[index].start_time - tick_length),
+                                          int(self.notes[index].end_time - tick_length),
                                           pitch, self.notes[index].channel, self.notes[index].chord))
 
     def remove_note(self, index: int):
