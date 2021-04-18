@@ -1,7 +1,8 @@
 from enum import IntEnum
 
-TWELVE_NOTE_SCALE = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+TWELVE_NOTE_SCALE_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 TWELVE_NOTE_SCALE_FLAT = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"]
+TWELVE_NOTE_SCALE_ENHARMONIC = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"]
 BEAT_STRENGTH_DICT = {
     (4, 4): [0.5, 0.1, 0.3, 0.1],
     (3, 4): [0.66, 0.17, 0.17],
@@ -68,5 +69,6 @@ FUNCTIONAL_SCORE_DICT = {
 
 
 OCTAVE_SEMITONE_COUNT = 12
-
+MAX_MIDI_VALUE = 127
+MIN_MIDI_VALUE = 0
 TIME_FORMAT = "%Y%m%d_%H%M%S"

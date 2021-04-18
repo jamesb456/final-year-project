@@ -16,8 +16,8 @@ class TimeSignature:
 
 class KeySignature:
     def __init__(self, note: str, minor: bool):
-        if note in constants.TWELVE_NOTE_SCALE:
-            self.note = constants.TWELVE_NOTE_SCALE.index(note)
+        if note in constants.TWELVE_NOTE_SCALE_SHARP:
+            self.note = constants.TWELVE_NOTE_SCALE_SHARP.index(note)
         elif note in constants.TWELVE_NOTE_SCALE_FLAT:
             self.note = constants.TWELVE_NOTE_SCALE_FLAT.index(note)
         else:
@@ -31,4 +31,4 @@ class KeySignature:
         return KeySignature("C", False)
 
     def __repr__(self):
-        return "{} {}".format(constants.TWELVE_NOTE_SCALE[self.note], "minor" if self.minor else "major")
+        return "{} {}".format(constants.TWELVE_NOTE_SCALE_SHARP[self.note], "minor" if self.minor else "major")

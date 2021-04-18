@@ -1,13 +1,16 @@
 """
 Common operation on MIDI files and objects
 """
+import re
+
 import mido
 
 from typing import Dict, List, Tuple, Optional, Deque
 from collections import OrderedDict, deque
 
-from mido import MidiTrack, MidiFile, Message, bpm2tempo, tick2second
+from mido import MidiTrack, MidiFile, Message, bpm2tempo, tick2second, MetaMessage
 
+from project.algorithms.core import constants
 from project.algorithms.core.chord import Chord
 from project.algorithms.core.note import Note
 from project.algorithms.graph_based.signature import TimeSignature, KeySignature
@@ -169,7 +172,7 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
             for note in notes:
                 if note.start_time >= chord_start:
                     # test: and note.end_time <= chord_end
-                    note.chord = chord
+                    note.chord = Chord(*chord.to_midi_values())  # COPY
 
     return notes
 
@@ -286,3 +289,79 @@ def get_track_non_note_messages(track: MidiTrack) -> Deque[Tuple[int, Message]]:
         time += message.time
 
     return meta_messages
+
+
+def get_higher_pitch(pitch_class: str) -> str:
+    if pitch_class == "G":
+        return "A"
+    else:
+        return str(chr(ord(pitch_class) + 1))
+
+
+def get_lower_pitch(pitch_class: str) -> str:
+    if pitch_class == "A":
+        return "G"
+    else:
+        return str(chr(ord(pitch_class) - 1))
+
+
+def get_note_parts(note_str: str) -> Tuple[str, str, str]:
+    key_regex = re.compile("([A-G])([#b])?(m)?")
+    match = key_regex.match(note_str)
+    pitch_class = match.group(1)
+    tonality = match.group(2)
+    minor_str = match.group(3) if match.group(3) == "m" else ""
+    return pitch_class, tonality, minor_str
+
+
+def get_correct_enharmonic(note_str: str) -> str:
+    if note_str in constants.TWELVE_NOTE_SCALE_SHARP:
+        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_SHARP.index(note_str)]
+    else:
+        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_FLAT.index(note_str)]
+
+
+def transpose_keysig_up(msg) -> Optional[MetaMessage]:
+    if msg.type == "key_signature":
+        new_message = MetaMessage("key_signature")
+        new_message.time = msg.time
+        new_key = ""
+        pitch_class, tonality, minor_str = get_note_parts(note_str=msg.key)
+        if tonality == "b":
+            new_key = pitch_class  # just need to add one semitone e.g Ab -> A
+        elif tonality == "#":
+            new_key = get_higher_pitch(pitch_class)
+        else:
+            if pitch_class == "E" or pitch_class == "B":
+                new_key = get_higher_pitch(pitch_class)
+            else:
+                new_key = pitch_class + "#"
+
+        new_message.key = get_correct_enharmonic(new_key) + minor_str
+        return new_message
+    else:
+        return None
+
+
+def transpose_keysig_down(msg) -> Optional[MetaMessage]:
+    if msg.type == "key_signature":
+        new_message = MetaMessage("key_signature")
+        new_message.time = msg.time
+        new_key = ""
+
+        pitch_class, tonality, minor_str = get_note_parts(note_str=msg.key)
+        if tonality == "#":
+            new_key = msg.pitch_class  # just need to remove one semitone e.g G# -> G
+        elif tonality == "b":
+            new_key = get_lower_pitch(pitch_class)
+        else:
+            if pitch_class == "F" or pitch_class == "C":
+                new_key = get_lower_pitch(pitch_class)
+            else:
+                new_key = pitch_class + "b"
+
+        new_message.key = get_correct_enharmonic(new_key) + minor_str
+        return new_message
+    else:
+        return None
+

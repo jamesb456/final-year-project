@@ -91,7 +91,7 @@ class Note:
         if self.pitch < 0 or self.pitch > 127:
             scientific_note = str(self.pitch) + " (out of range)"
         else:
-            scientific_note = constants.TWELVE_NOTE_SCALE[int(self.pitch) % 12] + str(
+            scientific_note = constants.TWELVE_NOTE_SCALE_SHARP[int(self.pitch) % 12] + str(
                 floor((int(self.pitch) - 12) / 12.0))
 
         base = f"Note {scientific_note} (MIDI note {self.pitch}) start={self.start_time} length={self.duration} " \
