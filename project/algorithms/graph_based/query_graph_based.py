@@ -21,7 +21,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
     curr_time = time.strftime(constants.TIME_FORMAT)
-    notes = get_note_timeline(query_file.tracks[melody_track], query_file.tracks[chord_track])
+    notes = get_note_timeline(query_file.tracks[melody_track], query_file.tracks[chord_track] if chord_track is not None else None)
     query_segment = NoteSegment(query_file, melody_track, notes,chord_track)
 
     query_reduced_segments = []

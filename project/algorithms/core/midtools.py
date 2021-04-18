@@ -179,7 +179,7 @@ def get_note_timeline(track: MidiTrack, chord_track: Optional[mido.MidiTrack] = 
 
 def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
                             start: float = 0, end: float = float("inf"), allow_smaller: bool = True,
-                            use_midi_times: bool = False) -> List[Note]:
+                            use_midi_times: bool = False, chord_track: Optional[MidiTrack] = None) -> List[Note]:
     """
     Return all notes within the time (in seconds) range [start,end]
 
@@ -190,6 +190,7 @@ def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
         end:  The end of the time range (default: inf (to the end of the track))
         allow_smaller: Whether to allow sets of notes that are smaller than the time range (for example, if the time range exceed the end of the song) (default: True). If False, returns the empty list [] if end goes over the end of the song
         use_midi_times: Whether to save notes with their MIDI tick values instead of the time in seconds (default: False)
+        chord_track: The track containing the corresponding chords of the melody track, if one exists
     Returns:
         A list of notes in the time range [start,end]
 
@@ -238,6 +239,14 @@ def get_notes_in_time_range(track: MidiTrack, ticks_per_beat: int,
                 notes[-1].end_time = curr_ticks
             else:
                 notes[-1].end_time = curr_time
+
+    if chord_track is not None:
+        chord_timeline = get_chord_timeline(chord_track)
+        # naive (this is even more inefficient)
+        for chord, chord_start, chord_end in chord_timeline:
+            for note in notes:
+                if note.start_time >= chord_start:
+                    note.chord = Chord(*chord.to_midi_values())  # COPY
 
     return notes
 

@@ -8,6 +8,7 @@ from project.algorithms.core import constants
 from project.algorithms.core.midi_segment import MidiSegment
 from project.algorithms.core.note import Note
 from project.algorithms.core.note_segment import NoteSegment
+from project.algorithms.core.random_segmenter import RandomSegmenter
 from project.algorithms.core.time_segmenter import TimeSegmenter
 from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 
@@ -45,7 +46,8 @@ def create_modified_queries(algorithm: str, num_queries: int, dataset_location: 
     for query in indexed_queries:
         # remove random notes (starting from the highest index to prevent any indices becoming invalid)
         if removed_notes > 0:
-            removed_note_indices = np.sort(np.array(rand.integers(0, len(query), size=min(removed_notes, len(query)))))[::-1]
+            removed_note_indices = np.sort(np.array(rand.integers(0, len(query), size=min(removed_notes, len(query)))))[
+                                   ::-1]
             for removed_note_index in removed_note_indices:
                 query.remove_note(removed_note_index)
 
@@ -71,6 +73,7 @@ def create_modified_queries(algorithm: str, num_queries: int, dataset_location: 
     return indexed_queries
 
 
-def create_random_queries(num_queries: int, dataset_location: str,
-                          melody_track: int, **kwargs) -> List[NoteSegment]:
-    pass
+def create_random_queries(num_queries: int, dataset_location: str, melody_track: int,
+                          min_length: int, max_length: int, seed: Optional[int], **kwargs) -> List[NoteSegment]:
+    creator = IndexedQueryCreator(RandomSegmenter(seed, min_length, max_length), seed)
+    return creator.create_queries(dataset_location, num_queries, melody_track, **kwargs["segmenter_args"])

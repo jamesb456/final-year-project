@@ -107,7 +107,26 @@ if __name__ == "__main__":
                                      help=" The number of removed notes to be removed from each segment. "
                                           " (default: %(default)s)")
     # random parser arguments
-    # TODO: complete this
+    random_parser.add_argument("--melody_track",
+                               type=int,
+                               default=0,
+                               help="The MIDI track to create the segments from. (default: %(default)s)")
+
+    random_parser.add_argument("--chord_track",
+                               type=int,
+                               default=None,
+                               help="The track containing the chords in the MIDI file. (useful only for the graph"
+                                    "algorithm, if such a track exists.) (default: %(default)s) ")
+
+    random_parser.add_argument("--min_length",
+                               type=int,
+                               default=1,
+                               help="The minimum length of the randomly sampled segments (default: %(default)s).")
+
+    random_parser.add_argument("--max_length",
+                               type=int,
+                               default=5,
+                               help="The maximum length of the randomly sampled segments (default: %(default)s).")
 
     args = parser.parse_args()
     output_path = pathlib.Path(f"mid/queries/{args.output_name}")
@@ -120,12 +139,11 @@ if __name__ == "__main__":
         sys.exit(1)
 
     segments = []
+    segmenter_args = {}
+    if args.chord_track is not None:
+        segmenter_args["chord_track"] = args.chord_track
+
     if args.query_strategy == "indexed" or args.query_strategy == "indexed_mod":
-
-        segmenter_args = {}
-        if args.chord_track is not None:
-            segmenter_args["chord_track"] = args.chord_track
-
         if args.time is not None:
             segmenter_args["time"] = args.time
         if args.query_strategy == "indexed":
@@ -140,7 +158,8 @@ if __name__ == "__main__":
                                                args.removed_notes, segmenter_args=segmenter_args)
     elif args.query_strategy == "random":
         print("Random segments chosen")
-        raise NotImplementedError("Not implemented yet")
+        segments = create_random_queries(args.number_of_queries, args.mid_dataset, args.melody_track,
+                                         args.min_length, args.max_length, args.rng_seed, segmenter_args=segmenter_args)
     else:
         raise ValueError(f"Unknown querying strategy {args.query_strategy}")
 
