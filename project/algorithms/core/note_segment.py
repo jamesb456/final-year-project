@@ -54,9 +54,7 @@ class NoteSegment(MidiSegment):
         non_note_message_queue = self._get_melody_non_note_messages()
         temp_queue = deque()
         for time, msg in non_note_message_queue:
-            if msg.type != "key_signature":
-                temp_queue.append((int(time * self.duration_transform), msg))
-            else:
+            if msg.type == "key_signature":
                 transposed_msg = msg
                 for i in range(abs(self.transpose_amount)):
                     if self.transpose_amount < 0:
@@ -65,6 +63,8 @@ class NoteSegment(MidiSegment):
                         transposed_msg = transpose_keysig_up(transposed_msg)
 
                 temp_queue.append((int(time * self.duration_transform), transposed_msg))
+            else:
+                temp_queue.append((int(time * self.duration_transform), msg))
 
         non_note_message_queue = temp_queue
 
@@ -72,8 +72,8 @@ class NoteSegment(MidiSegment):
         current_meta_index = 0
         current_time = self.start_time
         for (index, note) in enumerate(self.notes):
-            note.start_time *= self.duration_transform
-            note.end_time *= self.duration_transform
+            note.start_time = int(note.start_time * self.duration_transform)
+            note.end_time = int(note.end_time * self.duration_transform)
             # add meta messages at the appropriate time
             if non_note_message_queue[0][0] <= current_time:
                 while len(non_note_message_queue) > 0 and non_note_message_queue[0][0] <= current_time:
