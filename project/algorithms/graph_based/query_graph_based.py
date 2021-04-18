@@ -9,6 +9,7 @@ from networkx import astar_path_length
 from networkx.drawing.nx_pydot import write_dot
 from tqdm import tqdm
 
+from project.algorithms.core import constants
 from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.core.note_segment import NoteSegment
 from project.algorithms.core.midtools import get_note_timeline
@@ -19,9 +20,9 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100
-    curr_time = time.strftime("%Y%m%d_%I%M%S")
-    notes = get_note_timeline(query_file.tracks[melody_track], chord_track)
-    query_segment = NoteSegment(query_file, 0, notes)
+    curr_time = time.strftime(constants.TIME_FORMAT)
+    notes = get_note_timeline(query_file.tracks[melody_track], query_file.tracks[chord_track])
+    query_segment = NoteSegment(query_file, melody_track, notes,chord_track)
 
     query_reduced_segments = []
     current_segment = query_segment

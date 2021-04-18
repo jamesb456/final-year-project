@@ -44,6 +44,12 @@ if __name__ == '__main__':
     parser.add_argument("--chord_track", default=None,
                         help="The track that contains the query file's chords, if it exists (default: %(default)s)")
 
+    parser.add_argument("--g_use_minimum", action="store_true",
+                        help="If set and the graph algorithm is being used, "
+                             "changes the graph algorithm to use the minimum distance between a query"
+                             " segment and a song segment instead of the average over all"
+                             " segments. (default: %(default)s)")
+
     args = parser.parse_args()
 
     curr_time = datetime.datetime.now().strftime(constants.TIME_FORMAT)
@@ -61,13 +67,14 @@ if __name__ == '__main__':
     query_times = []
     ranks = []
     no_ranks = []
+    print(args.chord_track)
     for mid in tqdm(available_mids):
         if args.algorithm[0] == "graph":
             if args.chord_track is None:
-                response = stub.QueryGraph(GraphArgs(query_mid=str(mid), use_minimum=False,
+                response = stub.QueryGraph(GraphArgs(query_mid=str(mid), use_minimum=args.g_use_minimum,
                                                      melody_track=args.melody_track))
             else:
-                response = stub.QueryGraph(GraphArgs(query_mid=str(mid), use_minimum=False,
+                response = stub.QueryGraph(GraphArgs(query_mid=str(mid), use_minimum=args.g_use_minimum,
                                                      melody_track=args.melody_track, chord_track=int(args.chord_track)))
         else:
             response = stub.QueryPitchVector(VectorArgs(query_mid=str(mid), melody_track=args.melody_track))

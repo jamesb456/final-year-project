@@ -61,8 +61,7 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
             candidate_notes = get_notes_in_time_range(song_track, candidate.ticks_per_beat, start, end)
             mean_pitch = sum(map(lambda n: n.pitch, candidate_notes)) / len(candidate_notes)
             norm_notes = list(map(lambda n: n.normalize(mean_pitch, start, end - start), candidate_notes))
-            #  doesn't work atm: uses DTW to get an alignment instead
-            dist = recursive_alignment(query_notes_norm, norm_notes, [(0.45, 0.45), (0.5, 0.5), (0.55, 0.55)], 1)
+            dist = recursive_alignment(query_notes_norm, norm_notes, [(0.45, 0.45), (0.5, 0.5), (0.55, 0.55)], 2)
 
             song_name = pathlib.Path(candidate.song_ident.filename).stem
             if song_name not in similarity_map:
