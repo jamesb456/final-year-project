@@ -93,19 +93,19 @@ if __name__ == "__main__":
                                      help=" The amount to scale the duration of each note by."
                                           " (default: %(default)s)")
 
-    modified_ind_parser.add_argument("--extra_notes",
-                                     type=int,
-                                     default=0,
-                                     help=" The number of extra noise notes to be added to each segment. The pitch"
-                                          " of these notes is taken from a normal distribution with the mean pitch of "
-                                          " the original segment being the mean of the distribution. "
-                                          " (default: %(default)s)")
-
-    modified_ind_parser.add_argument("--removed_notes",
-                                     type=int,
-                                     default=0,
-                                     help=" The number of removed notes to be removed from each segment. "
-                                          " (default: %(default)s)")
+    # modified_ind_parser.add_argument("--extra_notes",
+    #                                  type=int,
+    #                                  default=0,
+    #                                  help=" The number of extra noise notes to be added to each segment. The pitch"
+    #                                      " of these notes is taken from a normal distribution with the mean pitch of "
+    #                                       " the original segment being the mean of the distribution. "
+    #                                       " (default: %(default)s)")
+    #
+    # modified_ind_parser.add_argument("--removed_notes",
+    #                                  type=int,
+    #                                  default=0,
+    #                                  help=" The number of removed notes to be removed from each segment. "
+    #                                       " (default: %(default)s)")
     # random parser arguments
     random_parser.add_argument("--melody_track",
                                type=int,
@@ -154,8 +154,7 @@ if __name__ == "__main__":
             print("Indexed (modified) segments chosen")
             segments = create_modified_queries(args.algorithm[0], args.number_of_queries, args.mid_dataset,
                                                args.melody_track, args.rng_seed,
-                                               args.transpose, args.duration_transform, args.extra_notes,
-                                               args.removed_notes, segmenter_args=segmenter_args)
+                                               args.transpose, args.duration_transform, segmenter_args=segmenter_args)
     elif args.query_strategy == "random":
         print("Random segments chosen")
         segments = create_random_queries(args.number_of_queries, args.mid_dataset, args.melody_track,
