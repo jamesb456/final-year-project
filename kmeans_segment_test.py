@@ -7,7 +7,7 @@ from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
 if __name__ == "__main__":
     old_segmenter = LbdmSegmenter(threshold=0.5)
     segmenter = LbdmClusteringSegmenter()
-    mid = MidiFile("mid/nottingham/jigs110.mid")
+    mid = MidiFile("mid/nottingham/hpps1.mid")
     old_segments = old_segmenter.create_segments(mid, 0)
     segments = segmenter.create_segments(mid, 0)
 

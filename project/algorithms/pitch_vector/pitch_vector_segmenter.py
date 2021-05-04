@@ -18,13 +18,13 @@ class PitchVectorSegmenter(Segmenter):
     def __normalize_pv(pv_arr: np.ndarray) -> float:
         mean_pitch = np.mean(pv_arr)
         pv_arr -= mean_pitch
-        return mean_pitch
+        return float(mean_pitch)
 
     @staticmethod
     def __get_observations(track: MidiTrack, start_index: int, num_obs: int, window_size: float,
                            tempo: int, ticks_per_beat: int) -> np.ndarray:
         time_to_advance = window_size / (num_obs - 1)
-        pv_arr = np.empty(20, dtype=float)
+        pv_arr = np.empty(num_obs, dtype=float)
 
         current_delta = track[start_index].time
         current_index = start_index

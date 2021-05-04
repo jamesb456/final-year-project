@@ -74,13 +74,10 @@ def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engin
                 if min_value == dist:
                     matched_vectors[song_name] = f"{start} {end} {candidate.window_modifier}"
 
-        # curr_time = time.strftime("%Y%m%d_%I%M%S")
-        # with open(f"{curr_time}_candidates.json", "w") as fh:
-        #     json.dump(list(map(lambda c: c.__dict__, candidates)), fh)
-
     sorted_dict = {k: v for k, v in sorted(similarity_map.items(), key=lambda item: item[1], reverse=True)}
     series = pd.Series(sorted_dict)
-    series.to_csv(f"query_output/rankings/test.csv")
+    pathlib.Path(f"query_output/rankings").mkdir(exist_ok=True, parents=True)
+    series.to_csv(f"query_output/rankings/{pathlib.Path(midi_path).stem}.csv")
     for index, (mid_file, similarity) in enumerate(sorted_dict.items()):
         print(f"\t[{len(similarity_map.items()) - index}] {mid_file}: {similarity}")
 

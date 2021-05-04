@@ -37,6 +37,7 @@ class LbdmClusteringSegmenter(Segmenter):
                                rest_weight=self.rest_weight, max_time_difference=mid.ticks_per_beat * 4)
 
         k_means = KMeans(init=np.array([[0], [1]]), n_clusters=2, n_init=1).fit(profile.reshape(-1, 1))
+
         plt.plot(profile, label="Boundary profile", color="purple")
         plt.ylim(0, 1.1)
         plt.scatter(range(len(profile)), profile, color="purple")
@@ -57,6 +58,7 @@ class LbdmClusteringSegmenter(Segmenter):
                 segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:profile_index[0] + 1]))
                 last_segmentation_index = profile_index[0]
 
+        segments.append(NoteSegment(mid, track_index, timeline[last_segmentation_index + 1:]))
         return segments
 
 

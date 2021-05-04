@@ -20,10 +20,11 @@ class RandomSegmenter(Segmenter):
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[MidiSegment]:
         track: MidiTrack = mid.tracks[track_index]
-        chord_track_ind = kwargs["chord_track"]
-        if chord_track_ind is not None:
+        if "chord_track" in kwargs and kwargs["chord_track"] is not None:
+            chord_track_ind = kwargs["chord_track"]
             chord_track = mid.tracks[chord_track_ind]
         else:
+            chord_track_ind = None
             chord_track = None
         time_segments = []
         delta_t = 0

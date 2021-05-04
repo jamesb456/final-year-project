@@ -134,5 +134,6 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
         print(f"\t[{len(sorted_dict.items()) - index}] {mid_name}: {similarity}")
 
     series.rename_axis(f"{metric} core distance from query core")
+    pathlib.Path(f"query_output/rankings").mkdir(exist_ok=True, parents=True)
     series.to_csv(f"query_output/rankings/{pathlib.Path(midi_path).stem}.csv")
     return sorted_dict
