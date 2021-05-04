@@ -1,3 +1,6 @@
+"""
+Contains various constants used throughout the project
+"""
 from enum import IntEnum
 
 TWELVE_NOTE_SCALE_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]

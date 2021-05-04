@@ -13,8 +13,8 @@ Running e.g. `segment.py -h` will give more information on how each script works
 
 ## Installation
 
-1. Install Python >= 3.7 first (if its not already installed)
-2. Create a *virtual environment* so the Python packages installed here don't
+1. Install Python >= 3.7 first (if it's not already installed)
+2. Create a *virtual environment*, so the Python packages installed here don't
 interfere with your system wide packages:
   
 ```console
@@ -23,7 +23,7 @@ python -m venv venv
 - *Activate* the virtual environment (this stays activated in the same command window):
 ```console 
 venv\Scripts\activate.bat # windows (CMD)
-venv\Scripts\activate.ps1 # windows (PowerShell) (might require admin priveleges)
+venv\Scripts\activate.ps1 # windows (PowerShell) (might require admin privileges)
 source venv\bin\activate  # UNIX-based
 ```
 

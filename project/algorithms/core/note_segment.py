@@ -1,3 +1,4 @@
+import pickle
 from collections import deque
 from typing import List, Optional, Tuple, Deque
 
@@ -14,6 +15,15 @@ from project.algorithms.core.midtools import get_track_signatures, get_track_non
 class NoteSegment(MidiSegment):
 
     def __init__(self, file: MidiFile, melody_track_ind: int, notes: List[Note], chord_track_ind: Optional[int] = None):
+        """
+        A NoteSegment is a derived class of MidiSegment. It represents part of a MIDI file as a list of musical notes.
+
+        Args:
+            file: the MIDI file this segment is taken from
+            melody_track_ind: the index of track the melody of the MIDI are contained in
+            notes: A list of notes derived from the MIDI file in some way (not necessarily straight from the file, could be a reduction)
+            chord_track_ind: the index of the track the chords of the MIDI file are contained in, if it exists
+        """
         super().__init__(file, melody_track_ind)
         self.notes = notes
         self.chord_track_ind = chord_track_ind
@@ -24,6 +34,12 @@ class NoteSegment(MidiSegment):
 
     @property
     def start_time(self) -> Optional[float]:
+        """
+        Return the start time of the segment, defined as the onset of the first note
+
+        Returns:
+            None if this segment contains no notes, otherwise the onset of the first note is returned
+        """
         if len(self.notes) > 0:
             return self.notes[0].start_time
         else:
@@ -31,6 +47,12 @@ class NoteSegment(MidiSegment):
 
     @property
     def end_time(self) -> Optional[float]:
+        """
+        Return the end time of the segment, defined as the offset of the last note
+
+        Returns:
+            None if this segment contains no notes, otherwise the offset of the last note is returned
+        """
         if len(self.notes) > 0:
             return self.notes[-1].end_time
         else:
@@ -38,19 +60,37 @@ class NoteSegment(MidiSegment):
 
     @property
     def _chord_track(self) -> Optional[MidiTrack]:
+        """
+        Return a MidiTrack which contains the chords of this NoteSegment. Returns None if no chords exist.
+
+        Returns:
+            None if this segment has no chords associated with it, otherwise the MidiTrack from which the chords were derived is returned.
+        """
         if self.chord_track_ind is None:
             return None
         else:
             return self._file.tracks[self.chord_track_ind]
 
     def _get_chord_non_note_messages(self) -> Deque[Tuple[int, Message]]:
+        """
+        Gets the non-note messages from the chord track. This is the same as _get_melody_non_note_messages, except
+        for the chord track (if it exists)
+
+        Returns:
+           A Deque containing messages relevant for saving this segment (with chords) as a MIDI file.
+        """
         if self._chord_track is None:
             return deque()
         else:
             return get_track_non_note_messages(self._chord_track)
 
     def copy_notes_to_track(self, track: MidiTrack):
+        """
+        Add all the notes in this NoteSegment to a new MidiTrack `track`.
 
+        Args:
+            track: The track to add the notes (in message form) to.
+        """
         non_note_message_queue = self._get_melody_non_note_messages()
         temp_queue = deque()
         for time, msg in non_note_message_queue:
@@ -96,6 +136,14 @@ class NoteSegment(MidiSegment):
             track.append(non_note_message_queue.popleft()[1])
 
     def copy_chords_to_track(self, track: MidiTrack):
+        """
+        Copy the list of chords in this NoteSegment to the MidiTrack track. If there are no chords, the track is
+        not modified.
+
+        Args:
+            track: the track to add the chords to.
+
+        """
         if self._chord_track is None:
             return
         else:
@@ -151,39 +199,76 @@ class NoteSegment(MidiSegment):
             while len(non_note_message_queue) > 0:
                 track.append(non_note_message_queue.popleft()[1])
 
-    def __get_time_signature_at(self, time: int) -> Tuple[int, TimeSignature]:
+    def __get_time_signature_at(self, tick_time: int) -> Tuple[int, TimeSignature]:
+        """
+        Returns what the time signature is at the given time in ticks
+
+        Args:
+            tick_time: The time in ticks at which to query the time signature
+
+        Returns:
+            A (time, time_sig) pair consisting of the last time signature, and the time this time signature was changed.
+        """
         last_time_sig_event = 0, TimeSignature.default()
         for time_sig_time, time_sig_value in self.time_signature_events:
-            if time_sig_time <= time:
+            if time_sig_time <= tick_time:
                 last_time_sig_event = time_sig_time, time_sig_value
             else:
                 break
         return last_time_sig_event
 
-    def __get_key_signature_at(self, time: int) -> KeySignature:
+    def __get_key_signature_at(self, tick_time: int) -> KeySignature:
+        """
+        Returns what the key signature is at the given time in ticks
+
+        Args:
+            tick_time: The time in ticks at which to query the key signature
+
+        Returns:
+            A (time, key_sig) pair consisting of the last key signature, and the time this key signature was changed.
+        """
         last_key_sig = KeySignature.default()
         for key_sig_time, key_sig_value in self.key_signature_events:
-            if key_sig_time <= time:
+            if key_sig_time <= tick_time:
                 last_key_sig = key_sig_value
             else:
                 break
         return last_key_sig
 
     def get_number_of_notes(self):
+        """
+        Get the number of notes within this NoteSegment. This gives the exact same value as len(NoteSegment)
+
+        Returns:
+            The amount of notes within this NoteSegment
+        """
         return len(self.notes)
 
     def get_mean_pitch(self) -> float:
+        """
+        Returns the mean pitch value of this segment as a floating point value
+
+        Returns:
+            the mean pitch value of this segment
+        """
         if len(self.notes) == 0:
             return 0
         else:
             return sum([note.pitch for note in self.notes]) / len(self.notes)
 
     def find_shortest_note_length(self) -> Optional[int]:
+        """
+        Returns the shortest length note in this NoteSegment, or None if there are no notes.
+
+        Returns:
+            None if there are no notes present, else the note with the shortest length/duration
+        """
         return min([note.duration for note in self.notes], default=None)
 
     def get_notes_in_time_range(self, range_start: int, range_length: int) -> List[Note]:
         """
         Gets a list of notes who's onset times fall within the range [range_start,range_start + range_length)
+
         Args:
             range_start: The start of the range
             range_length: The end of the range
@@ -194,6 +279,13 @@ class NoteSegment(MidiSegment):
         return [note for note in self.notes if (range_start <= note.start_time < range_start + range_length)]
 
     def save_as_midi(self, filepath):
+        """
+        Save the notes in this segment as a complete MIDI file. The metadata of this new MIDI file is exactly the same
+        as the file this segment originally came from
+
+        Args:
+            filepath: The filepath to save the new MidiFile to.
+        """
         # create new MidiFile with the same metadata
         new_file = MidiFile(**self.get_file_metadata())
 
@@ -206,9 +298,30 @@ class NoteSegment(MidiSegment):
         new_file.save(filename=filepath)
 
     def save_segment(self, filepath):
-        pass
+        """
+        Save this segment as a python ``pickle`` to the given filepath
+
+        Args:
+            filepath: the filepath to save the segment to
+        """
+        with open(filepath, "wb") as fh:
+            pickle.dump(self, fh, pickle.HIGHEST_PROTOCOL)
 
     def reduce_segment(self, window_size: int = -1) -> Tuple[int, 'NoteSegment']:
+        """
+        Reduce this segment to a simpler version by looking at up to 2 notes within a sliding time window, deleting
+        the least relevant one, and then assigning its duration to the more relevant one. The relevance of notes is
+        decided by three scores:\n
+        * Metrical: position of each note within their musical bars.
+        * Consonance (requires chords): interval between the note and it's underlying chord
+        * Functional (requires chords): interval between a note's underlying chord and the key signature
+
+        Args:
+            window_size: The size of the note window in ticks. If left to the default, the window size is 2x the shortest note length.
+
+        Returns:
+            A new reduced segment based on the above rules. If there are only 0 or 1 notes in this note segment, returns a new, identical segment.
+        """
         if self.get_number_of_notes() < 2:
             return 1, NoteSegment(self._file, self.melody_track_ind, self.notes)
 
@@ -311,6 +424,12 @@ class NoteSegment(MidiSegment):
         return weight, NoteSegment(self._file, self.melody_track_ind, reduced_notes)
 
     def transpose(self, transpose_pitch: int):
+        """
+        Move all notes ( and chords if they exist) in this segment up or down by ``transpose_pitch``
+
+        Args:
+            transpose_pitch: The amount to move each note up or down pitchwise
+        """
         self.transpose_amount += transpose_pitch
         for note in self.notes:
             note.pitch += transpose_pitch
@@ -318,9 +437,25 @@ class NoteSegment(MidiSegment):
                 note.chord.transpose(transpose_pitch)
 
     def change_duration_transform(self, factor: float = 1):
+        """
+        Scale each note by a constant factor. Note: only works with factors > 1.
+
+        Args:
+            factor: The amount to change the duration of each note by
+
+        """
         self.duration_transform = factor
 
     def add_note(self, pitch: int, tick_length: int, index: int):
+        """
+        Add a note at the specified index, with pitch ``pitch`` and length ``tick_length``
+
+        Args:
+            pitch: The pitch of the note to add
+            tick_length: the length (in ticks) of the note to add
+            index: the index at which to place this new note
+
+        """
         # change note start & end times after this new note to take it into account
         if index < len(self.notes):
             for note in self.notes[index:]:
@@ -331,6 +466,12 @@ class NoteSegment(MidiSegment):
                                           pitch, self.notes[index].channel, self.notes[index].chord))
 
     def remove_note(self, index: int):
+        """
+        Remove the note from the specified index. If this index isn't valid the method does nothing.
+
+        Args:
+            index: The index of the note to remove
+        """
         if index in range(len(self.notes)):
             del self.notes[index]
 
@@ -338,4 +479,10 @@ class NoteSegment(MidiSegment):
         return str(self.__dict__)
 
     def __len__(self):
-        return len(self.notes)
+        """
+        Return the number of notes in this NoteSegment
+
+        Returns:
+            The number of notes within this NoteSegment
+        """
+        return self.get_number_of_notes()

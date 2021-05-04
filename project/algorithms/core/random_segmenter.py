@@ -12,13 +12,37 @@ from project.algorithms.core.segmenter import Segmenter
 
 
 class RandomSegmenter(Segmenter):
+
     def __init__(self, seed: Optional[int], min_length: float = 1, max_length: float = 2):
+        """
+        A ``Segmenter`` which is similar to ``TimeSegmenter``, but extracts random length ``NoteSegments``
+        instead of fixed length ones.
+
+        Args:
+            seed: The random seed used to determine segment lengths. If None, uses the Numpy default random seed.
+            min_length: The minimum length of each segment (in seconds)
+            max_length: The maximum length of each segment (in seconds)
+
+        """
         self.min_length = min_length
         self.max_length = max_length
         self.seed = seed
         super().__init__()
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[MidiSegment]:
+        """
+        Segment the given MidiFile, producing a random length segment from each note onset. If the
+        segment reaches the end of the track before the end of the randomized length, no segment is
+        extracted
+
+        Args:
+            mid: The MidiFile to segment
+            track_index:  track_index: The index of the track to segment with respect to
+            **kwargs: Not used in this derived class
+
+        Returns:
+            A list of NoteSegments of variable length.
+        """
         track: MidiTrack = mid.tracks[track_index]
         if "chord_track" in kwargs and kwargs["chord_track"] is not None:
             chord_track_ind = kwargs["chord_track"]

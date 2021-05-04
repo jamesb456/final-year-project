@@ -11,10 +11,30 @@ from project.algorithms.core.segmenter import Segmenter
 
 class TimeSegmenter(Segmenter):
     def __init__(self, time: float):
+        """
+        A Segmenter which creates a ``NoteSegment`` for each `time` second segment of the MIDI file. A new segment is
+        created at the start of each note onset if it would be long enough.
+
+        Args:
+            time: The length of the segment in seconds
+        """
         self.time = time
         super().__init__()
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[MidiSegment]:
+        """
+        Segment the given MidiFile, producing a ``TimeSegmenter.time`` second segment from each note onset. If the
+        segment reaches the end of the track before ``TimeSegmenter.time`` seconds has been recorded, no segment is
+        extracted
+
+        Args:
+            mid: The MidiFile to segment
+            track_index:  track_index: The index of the track to segment with respect to
+            **kwargs: Not used in this derived class
+
+        Returns:
+            A list of NoteSegments of fixed length
+        """
         track: MidiTrack = mid.tracks[track_index]
         time_segments = []
         delta_t = 0

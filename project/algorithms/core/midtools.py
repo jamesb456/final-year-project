@@ -17,10 +17,28 @@ from project.algorithms.graph_based.signature import TimeSignature, KeySignature
 
 
 def is_note_off(msg: Message) -> bool:
+    """
+    Returns whether the entered MidiMessage represents a note_off event
+
+    Args:
+        msg: A mido MIDI message object
+
+    Returns:
+        True if the message represents a note_off message, False otherwise.
+    """
     return msg.type == "note_off" or (msg.type == "note_on" and msg.velocity == 0)
 
 
 def is_note_on(msg: Message) -> bool:
+    """
+    Returns whether the entered MidiMessage represents a note_on event
+
+    Args:
+        msg: A mido MIDI message object
+
+    Returns:
+        True if the message represents a note_on message, False otherwise.
+    """
     return msg.type == "note_on" and msg.velocity > 0
 
 
@@ -29,7 +47,7 @@ def get_note_tally(mid: MidiFile) -> Dict[int, int]:
 
 
     Args:
-        mid (mido.MidiFile): The midi object to be analysed.
+        mid (MidiFile): The midi object to be analysed.
 
     Returns:
         Dict[int,int]: A dictionary with the keys being the MIDI note numbers (0 to 127), and the values being the
@@ -54,7 +72,7 @@ def get_type_tally(mid: MidiFile) -> Dict[str, int]:
 
 
     Args:
-        mid (mido.MidiFile): The midi object to be analysed.
+        mid (MidiFile): The midi object to be analysed.
 
     Returns:
         Dict[str,int]: A dictionary containing a tally of each MIDI message type (how often they appear)
@@ -72,6 +90,16 @@ def get_type_tally(mid: MidiFile) -> Dict[str, int]:
 
 
 def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]:
+    """
+    Get the time (in seconds) and the index of the start of the first note in this MIDI track.
+
+    Args:
+        track: The track to find the start offset from
+        ticks_per_beat: The ticks per beat of the MIDI track.
+
+    Returns:
+        the time (in seconds) and the index of the *start* of the first note in this MIDI track.
+    """
     start_offset = 0
     tempo = bpm2tempo(120)
     first_note_on_ind = 0
@@ -87,6 +115,16 @@ def get_start_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]
 
 
 def get_end_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]:
+    """
+    Get the time (in seconds) and the index of the *end* of the last note in this MIDI track.
+
+    Args:
+        track: The track to find the end offset from
+        ticks_per_beat: The ticks per beat of the MIDI track.
+
+    Returns:
+        the time (in seconds) and the index in the track of the end of the last note in this MIDI track.
+    """
     tempo = bpm2tempo(120)
     end_offset = 0
     last_note_off = 0
@@ -103,6 +141,16 @@ def get_end_offset(track: MidiTrack, ticks_per_beat: int) -> Tuple[float, int]:
 
 
 def get_chord_timeline(chord_track: MidiTrack) -> List[Tuple[Chord, int, int]]:
+    """
+    Given a MidiTrack containing a list of chords, return a timeline of what chords were playing at what time. This
+    is represented as a list of (chord, start_time, stop_time) tuples.
+
+    Args:
+        chord_track: The track containing the chords.
+
+    Returns:
+        A list of (chord, start_time, stop_time) tuples showing which chords were playing at what tine
+    """
     chords = []
     on_dict = OrderedDict()
     # off_dict = defaultdict(list)
@@ -256,10 +304,10 @@ def get_track_signatures(track: MidiTrack) -> Tuple[List[Tuple[int, TimeSignatur
     Returns a list of key and time signatures in the MIDI track, and their positions within the track (in ticks)
 
     Args:
-        track: The Midi track to check
+        track: The MidiTrack to get the list of time and key signatures from
 
     Returns:
-        A Tuple of lists containing pairs of (time, signature) for both time and key signatures
+        A Tuple of lists containing pairs of (time, signature) for both time and key signatures.
     """
     time_signatures = []
     key_signatures = []
@@ -279,6 +327,15 @@ def get_track_signatures(track: MidiTrack) -> Tuple[List[Tuple[int, TimeSignatur
 
 
 def get_track_tempo_changes(track: MidiTrack) -> List[Tuple[int, int]]:
+    """
+    Get a list of tempo changes within the given MidiTrack, and when they occurred (in ticks).
+
+    Args:
+        track: The track to get the time of tempo changes from
+
+    Returns:
+        A list of (time, tempo) pairs showing when each tempo_change message occured.
+    """
     time = 0
     tempo_changes = []
     for message in track:
@@ -290,6 +347,16 @@ def get_track_tempo_changes(track: MidiTrack) -> List[Tuple[int, int]]:
 
 
 def get_track_non_note_messages(track: MidiTrack) -> Deque[Tuple[int, Message]]:
+    """
+    Returns a double ended queue containing the messages relevant for saving MIDI files  (other than the
+    actual notes). This means any `MetaMessage`, as well as `control_change` and `program_change` messages. These
+    messages correspond to things like instrument choice, key signature, tempo etc.
+
+    Args:
+        track: the MIDI track to get the non note messages from
+    Returns:
+        A Deque containing messages relevant for saving this segment as a MIDI file.
+    """
     time = 0
     meta_messages = deque()
     for message in track:
@@ -301,6 +368,15 @@ def get_track_non_note_messages(track: MidiTrack) -> Deque[Tuple[int, Message]]:
 
 
 def get_higher_pitch(pitch_class: str) -> str:
+    """
+    Get the pitch class 1 note above the pitch_class given. e.g. E->F , B->C , D->E
+
+    Args:
+        pitch_class: The pitch class to raise up.
+
+    Returns:
+        A pitch class (as a string) one note above the given pitch class
+    """
     if pitch_class == "G":
         return "A"
     else:
@@ -308,34 +384,75 @@ def get_higher_pitch(pitch_class: str) -> str:
 
 
 def get_lower_pitch(pitch_class: str) -> str:
+    """
+    Get the pitch class 1 note below the pitch_class given. e.g. F->E , C->B, B->A
+
+    Args:
+        pitch_class: The pitch class to raise up.
+
+    Returns:
+        A pitch class (as a string) one note above the given pitch class
+    """
     if pitch_class == "A":
         return "G"
     else:
         return str(chr(ord(pitch_class) - 1))
 
 
-def get_note_parts(note_str: str) -> Tuple[str, str, str]:
+def get_keysig_parts(keysig_str: str) -> Tuple[str, str, str]:
+    """
+    Given a textual key signature from mido's formatting, split it into three possible parts: \n
+    * The pitch class (A-G)
+    * If pitch class is flat, or sharp, or none
+    * If the key is a minor key or not
+
+    Args:
+        keysig_str: a string representation of a key signature, as used by mido
+    Returns:
+        A (pitch_class, flat/sharp/"", minor/"") tuple representing the different parts of the key signature.
+    """
     key_regex = re.compile("([A-G])([#b])?(m)?")
-    match = key_regex.match(note_str)
+    match = key_regex.match(keysig_str)
     pitch_class = match.group(1)
     tonality = match.group(2)
     minor_str = match.group(3) if match.group(3) == "m" else ""
     return pitch_class, tonality, minor_str
 
 
-def get_correct_enharmonic(note_str: str) -> str:
-    if note_str in constants.TWELVE_NOTE_SCALE_SHARP:
-        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_SHARP.index(note_str)]
+def get_correct_enharmonic(pitch_class: str) -> str:
+    """
+    Get the *enharmonic* (i.e. a differently named pitch class with the same actual pitch, e.g. G# and Ab) of the
+    given pitch class.
+
+    Args:
+        pitch_class: A pitch class of a note e.g. F#, Ab, C# etc.
+
+    Returns:
+        An enharmonic of the note. For notes like C, D ,F etc. the same note is returned
+    """
+    if pitch_class in constants.TWELVE_NOTE_SCALE_SHARP:
+        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_SHARP.index(pitch_class)]
     else:
-        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_FLAT.index(note_str)]
+        return constants.TWELVE_NOTE_SCALE_ENHARMONIC[constants.TWELVE_NOTE_SCALE_FLAT.index(pitch_class)]
 
 
 def transpose_keysig_up(msg) -> Optional[MetaMessage]:
+    """
+    Transpose a key signature message up 1 semitone e.g. C (no flats or sharps) -> C# (7 sharps)
+    Since mido messages are not strongly typed, this method returns
+    None if the given message is not a key signature message.
+
+    Args:
+        msg: A Message from a mido MidiFile.
+
+    Returns:
+        None if the message is not a key signature message. Else, return a key_signature message transposed up 1  semitone
+    """
     if msg.type == "key_signature":
         new_message = MetaMessage("key_signature")
         new_message.time = msg.time
         new_key = ""
-        pitch_class, tonality, minor_str = get_note_parts(note_str=msg.key)
+        pitch_class, tonality, minor_str = get_keysig_parts(keysig_str=msg.key)
         if tonality == "b":
             new_key = pitch_class  # just need to add one semitone e.g Ab -> A
         elif tonality == "#":
@@ -353,12 +470,23 @@ def transpose_keysig_up(msg) -> Optional[MetaMessage]:
 
 
 def transpose_keysig_down(msg) -> Optional[MetaMessage]:
+    """
+    Transpose a key signature message down 1 semitone e.g. C (no flats or sharps) -> B (5 sharps)
+    Since mido messages are not strongly typed, this method returns
+    None if the given message is not a key signature message.
+
+    Args:
+        msg: A Message from a mido MidiFile.
+
+    Returns:
+        None if the message is not a key signature message. Else, return a key_signature message transposed down 1 semitone
+    """
     if msg.type == "key_signature":
         new_message = MetaMessage("key_signature")
         new_message.time = msg.time
         new_key = ""
 
-        pitch_class, tonality, minor_str = get_note_parts(note_str=msg.key)
+        pitch_class, tonality, minor_str = get_keysig_parts(keysig_str=msg.key)
         if tonality == "#":
             new_key = msg.pitch_class  # just need to remove one semitone e.g G# -> G
         elif tonality == "b":
