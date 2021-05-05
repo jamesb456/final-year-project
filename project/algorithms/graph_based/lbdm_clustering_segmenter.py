@@ -36,6 +36,7 @@ class LbdmClusteringSegmenter(Segmenter):
         profile, _ = lbdm.lbdm(timeline, pitch_weight=self.pitch_weight, ioi_weight=self.ioi_weight,
                                rest_weight=self.rest_weight, max_time_difference=mid.ticks_per_beat * 4)
 
+        # 1-D K-means clustering with "centers" at 0 and 1
         k_means = KMeans(init=np.array([[0], [1]]), n_clusters=2, n_init=1).fit(profile.reshape(-1, 1))
 
         plt.plot(profile, label="Boundary profile", color="purple")

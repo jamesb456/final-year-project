@@ -267,7 +267,7 @@ class NoteSegment(MidiSegment):
 
     def get_notes_in_time_range(self, range_start: int, range_length: int) -> List[Note]:
         """
-        Gets a list of notes who's onset times fall within the range [range_start,range_start + range_length)
+        Gets a list of notes whose onset times fall within the range [range_start,range_start + range_length)
 
         Args:
             range_start: The start of the range

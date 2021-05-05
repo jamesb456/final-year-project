@@ -9,7 +9,7 @@ import argparse
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Create a series of query from a set of MIDI files based on several"
                                                  " strategies.")
-    parser.add_argument("mid_dataset", help="A path to a folder containing MIDI files to create the queries from.")
+    parser.add_argument("mid_files", help="A path to a folder containing MIDI files to create the queries from.")
     parser.add_argument("number_of_queries", help="The number of query MIDI files to generate "
                                                   "(default: %(default)s)", type=int, default=400)
     parser.add_argument("output_name", help="The name of the folder these MIDIs should be placed in. This folder "

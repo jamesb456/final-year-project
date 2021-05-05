@@ -56,7 +56,7 @@ def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
             last_node = reduce_name
         original_nodes = []
         # iterate through each node in the graph of the music piece, adding edges between those nodes and the reductions
-        # we just computed for the query core
+        # we just computed for the query node
         for node, node_data in graph.nodes(data=True):
             if "query" in node or node == "root":  # ignore any nodes from the query or the root node
                 pass

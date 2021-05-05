@@ -58,7 +58,8 @@ if __name__ == '__main__':
 
     queries = pathlib.Path(f"mid/queries/{args.query_set}")
     if not queries.exists():
-        sys.stderr.write(f"Error: the query set {args.query_set} does not exist")
+        sys.stderr.write(f"Error: the query set {args.query_set} does not exist\n")
+        sys.stderr.write("Query sets are created using the create_query_midis.py script and are located in mid/queries")
         sys.stderr.flush()
         sys.exit(1)
 
