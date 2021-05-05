@@ -148,16 +148,16 @@ if __name__ == "__main__":
             segmenter_args["time"] = args.time
         if args.query_strategy == "indexed":
             print("Indexed segments chosen")
-            segments = create_indexed_queries(args.algorithm[0], args.number_of_queries, args.mid_dataset,
+            segments = create_indexed_queries(args.algorithm[0], args.number_of_queries, args.mid_files,
                                               args.melody_track, args.rng_seed, segmenter_args=segmenter_args)
         else:
             print("Indexed (modified) segments chosen")
-            segments = create_modified_queries(args.algorithm[0], args.number_of_queries, args.mid_dataset,
+            segments = create_modified_queries(args.algorithm[0], args.number_of_queries, args.mid_files,
                                                args.melody_track, args.rng_seed,
                                                args.transpose, args.duration_transform, segmenter_args=segmenter_args)
     elif args.query_strategy == "random":
         print("Random segments chosen")
-        segments = create_random_queries(args.number_of_queries, args.mid_dataset, args.melody_track,
+        segments = create_random_queries(args.number_of_queries, args.mid_files, args.melody_track,
                                          args.min_length, args.max_length, args.rng_seed, segmenter_args=segmenter_args)
     else:
         raise ValueError(f"Unknown querying strategy {args.query_strategy}")
