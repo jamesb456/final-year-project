@@ -15,6 +15,9 @@ class LbdmClusteringSegmenter(Segmenter):
 
     def __init__(self, pitch_weight: float = 0.25, ioi_weight: float = 0.5,
                  rest_weight: float = 0.25):
+        """
+        An incomplete implementation of LBDM using k-means to determine the threshold
+        """
 
         super().__init__()
         self.pitch_weight = pitch_weight

@@ -20,9 +20,23 @@ from project.algorithms.core.midtools import get_start_offset, get_end_offset, g
 
 def query_pitch_vector(midi_path: str, vector_map: Dict[Tuple[float, int], Engine],
                        melody_track: int = 0) -> Tuple[Dict[str, float], Dict[str, str]]:
+    """
+    Run *Query by Example*, trying to guess the parent song of the MIDI file located at ``midi_path``,
+    with a known set of pitch vectors, each associated with a song, being used.
+
+    Args:
+        midi_path: The path to the Query MIDI file that we want to find the parent song of.
+        melody_track: The track containing the melody of the MIDI at midi_path
+        vector_map: A list of Engines containing pitch vectors with different observations and window sizes
+
+    Returns:
+        A (ranking, extra) pair. ranking contains the distance between the query and each known file in the indexed dataset.
+        extra is extra information about which exact vector had the smallest distance
+    """
+
     # build up database of pitch vectors
     # then segment the query based on the different window sizes and observations
-    # in the database
+    # in the database Engine
 
     query_mid = MidiFile(midi_path)
     query_track = query_mid.tracks[melody_track]

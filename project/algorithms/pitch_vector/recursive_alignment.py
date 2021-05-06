@@ -7,10 +7,25 @@ import numpy as np
 
 
 def __dist(p1: Note, p2: Note, max_value: float = 10000) -> float:
+    """
+    The distance measure used to evaluate the "distance" between two notes.
+
+    Args:
+        p1: The first note.
+        p2: The second note.
+        max_value: The upper limit for what the distance can be at maximum.
+
+    Returns:
+        The "distance" between two notes
+    """
     return min(((p1.pitch - p2.pitch) ** 2) + ((p1.start_time - p2.start_time) ** 2), max_value)
 
 
 def __linear_scaling(query: List[Note], candidate: List[Note]) -> float:
+    """
+    A method for aligning two sequence of notes which only uses their relative positions. This didn't work
+    so wasn't used in the final implementation.
+    """
     j = 0
     dist = 0
     scale = len(query)  # duration of candidate is always 1 (as it has been normalized)
@@ -25,6 +40,17 @@ def __linear_scaling(query: List[Note], candidate: List[Note]) -> float:
 
 
 def __dynamic_time_warping(query: List[Note], candidate: List[Note]) -> float:
+    """
+    A dynamic programming algorithm for calculating the distance between a query and candidate list of notes. DTW
+    tries to find the best alignment between the two sets of notes.
+
+    Args:
+        query: The series of notes from the query
+        candidate: The series of notes from the candidate
+
+    Returns:
+        The distance between the query and candidate after DTW aligned the notes as best it could.
+    """
     if len(query) == 0 or len(candidate) == 0:
         return 0
     dtw = np.zeros((len(query), len(candidate)), dtype=float)
@@ -42,6 +68,18 @@ def __dynamic_time_warping(query: List[Note], candidate: List[Note]) -> float:
 
 def recursive_alignment(query: List[Note], candidate: List[Note],
                         scale_pairs: List[Tuple[float, float]], rec_depth: int = 1) -> float:
+    """
+    Return the distance between two sets of notes using recursive alignment.
+
+    Args:
+        query: The series of notes from the query
+        candidate: The series of notes from the candidate
+        scale_pairs: Points to split the query at
+        rec_depth: The maximum depth of recursion allowed
+
+    Returns:
+        The distance between the query and candidate after recursive alignment aligned the notes as best it could.
+    """
     i = 0
     j = floor(len(candidate) / 2)
     min_score: Optional[float] = None

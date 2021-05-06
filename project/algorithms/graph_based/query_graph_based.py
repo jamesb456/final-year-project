@@ -17,6 +17,22 @@ from project.algorithms.core.midtools import get_note_timeline
 
 def query_graph(midi_path: str, melody_track: int, use_minimum: bool,
                 write_graphs: bool, graphs: List[MidiGraph], chord_track: Optional[int] = None) -> Dict[str, float]:
+    """
+    Run *Query by Example*, trying to guess the parent song of the MIDI file located at ``midi_path``,
+    with the known set of songs as graphs ``graphs`` being used.
+
+    Args:
+        midi_path: The path to the Query MIDI file that we want to find the parent song of.
+        melody_track: The track containing the melody of the MIDI at midi_path
+        use_minimum: Whether to use the min distance between segments instead of the average distance
+        write_graphs: If True, writes graphs containing the query segment and the original graph to query_output/graphs/
+        graphs: The index of graphs to use
+        chord_track: The index of the track containing the chords of the Query MIDI file, if it exists
+
+    Returns:
+        A dictionary containing the distance between the query and each known file in the indexed dataset.
+    """
+
     query_file = MidiFile(midi_path)
     metric = "Minimum" if use_minimum else "Average"
     non_connected_penalty = 100

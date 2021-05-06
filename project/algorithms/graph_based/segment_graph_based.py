@@ -61,11 +61,12 @@ def segment_graph(midi_path: str, melody_track: int, output_folder: str,
                 reduced_segments.append((seg_ind, reduced_segment))
                 graph.add_node(reduced_filepath, reduced_segment)
                 if i > 1:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i-1}.mid")),
-                                   f2=reduced_filepath, weight=weight)
+                    graph.add_edge(
+                        n1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}_reduction_{i - 1}.mid")),
+                        n2=reduced_filepath, weight=weight)
                 else:
-                    graph.add_edge(f1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
-                                   f2=reduced_filepath, weight=weight)
+                    graph.add_edge(n1=str(pathlib.Path(f"{mid_location}/midi_segments/segment_{seg_ind}.mid")),
+                                   n2=reduced_filepath, weight=weight)
         segment_dict[i] = reduced_segments
         segments_and_indices = reduced_segments
         i += 1

@@ -8,9 +8,10 @@ The code in this repository can be run to:
   and `query_client.py`). Some ready made queries exist in the folder mid/queries/
 - Run a demo showing how the graph algorithm works (`jupyter notebook`, then open `demo.ipynb`. 
   Alternatively VS Code has extensions to run .ipynb notebooks)
-- A script demonstrating everything in the project (`test_components.py`)
+- A script demonstrating everything in the project (`test_components.py`) running in sequence
   
-Running e.g. `segment.py -h` will give more information on how each script works.
+Running e.g. `segment.py -h` will give more information on how each script works 
+(except) for `test_components.py` which doesn't take any arguments anyway
 
 ## Installation
 
@@ -63,4 +64,6 @@ The output of each cell should be visible anyway so that should be sufficient
 `query_file.py`, the `dataset` is relative to this folder (so if running `query_file.py` with `--algorithm pitch_vector`
   the `dataset` argument should be a folder contained in `mid\generated\pitch_vector`)
 - You can see what indexed datasets are able to be used with `server.py` with the switch `--list_indexes`
-- Contact me if there are any other issues not listed here.
+- Contact me if there are any other issues not listed here. From trying to get this set up
+on different systems with different Operating Systems, I've tried to note all
+  the points where it wrong for me.

@@ -9,13 +9,31 @@ from project.algorithms.core.midtools import get_track_tempo_changes, is_note_on
 
 
 class PitchVectorSegmenter(Segmenter):
+
     def __init__(self, window_size: float, observations: int):
+        """
+        A Segmenter which divides a MIDI file into several overlapping multidimensional vectors. Each vector is based
+        on observations of the pitch within a ``window_size`` time window.
+
+        Args:
+            window_size: The size of the window, in seconds
+            observations: The number of observations, or dimensions, in each vector.
+        """
         self.window_size = window_size
         self.observations = observations
         super().__init__()
 
     @staticmethod
     def __normalize_pv(pv_arr: np.ndarray) -> float:
+        """
+        Normalize a pitch vector by taking away the mean of all components from every component.
+
+        Args:
+            pv_arr: The pitch vector to be normalized
+
+        Returns:
+            the mean pitch of the pitch vector
+        """
         mean_pitch = np.mean(pv_arr)
         pv_arr -= mean_pitch
         return float(mean_pitch)
@@ -23,6 +41,21 @@ class PitchVectorSegmenter(Segmenter):
     @staticmethod
     def __get_observations(track: MidiTrack, start_index: int, num_obs: int, window_size: float,
                            tempo: int, ticks_per_beat: int) -> np.ndarray:
+        """
+        Returns a pitch vector with *observations* of the pitch throughout a time window starting at the note onset of
+        the note at ``start_index``, and stopping after ``window_size`` seconds.
+
+        Args:
+            track: The MidiTrack to get the observations from.
+            start_index: The start index of the note to begin the pitch vector from
+            num_obs: The number of points to observe the pitch at.
+            window_size: The size of the vector in terms of time in seconds
+            tempo: The initial tempo of the song at the start of the vector
+            ticks_per_beat: The ticks per beat of the MIDI file the track is taken from
+
+        Returns:
+            A numpy array which is a pitch vector
+        """
         time_to_advance = window_size / (num_obs - 1)
         pv_arr = np.empty(num_obs, dtype=float)
 
@@ -63,6 +96,17 @@ class PitchVectorSegmenter(Segmenter):
         return pv_arr
 
     def create_segments(self, mid: MidiFile, track_index: int, **kwargs) -> List[PitchVectorSegment]:
+        """
+        Create segments based on an overlapping segmentation algorithm, extracting pitch vectors at each note onset.
+
+        Args:
+            mid: The file to segment
+            track_index: The index of the track to create segments from
+            **kwargs: Not used
+
+        Returns:
+            A list of segments of this MIDI file represented as vectors.
+        """
         track: MidiTrack = mid.tracks[track_index]
         pitch_vector_segments = []
         delta_t = 0

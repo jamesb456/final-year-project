@@ -36,12 +36,12 @@ if __name__ == "__main__":
                         help="The track that contains the query file's chords, if it exists (default: %(default)s)")
 
     parser.add_argument("--write_graphs", action="store_true", help="If set, writes the graphs containing "
-                                                                    "the query core connected to the original, "
+                                                                    "the query segment connected to the original, "
                                                                     "stored graphs. (this only is relevant for the "
                                                                     "graph based algorithm)")
 
     parser.add_argument("--use_minimum", action="store_true", help="If set, use the minimum path length between a query"
-                                                                   " core and segments in the MIDI instead of the "
+                                                                   " segment and segments in the MIDI instead of the "
                                                                    "average (this only is relevant for the "
                                                                    "graph based algorithm)")
     parser.add_argument("--pv_veclength", type=int, default=16,
