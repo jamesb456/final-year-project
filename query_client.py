@@ -107,9 +107,9 @@ if __name__ == '__main__':
         else:
             no_ranks.append(0)
 
-    ranks = pd.Series(ranks)
-    no_ranks = pd.Series(no_ranks)
-    query_times = pd.Series(query_times)
+    ranks = pd.Series(ranks, dtype=float)
+    no_ranks = pd.Series(no_ranks, dtype=float)
+    query_times = pd.Series(query_times, dtype=float)
     mean_query_time = query_times.mean()
     len_ranks = len(ranks.index)
     print(f"Mean query time is {mean_query_time}s")

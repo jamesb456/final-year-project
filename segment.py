@@ -25,9 +25,10 @@ if __name__ == '__main__':
     parser.add_argument("midi_paths", nargs="+", type=str,
                         help="Path to MIDI file(s) to segment")
 
-    parser.add_argument("-o", "--output_folder", type=str,
+    parser.add_argument("-o", "--output_folder", type=str, default=f"{time.strftime(constants.TIME_FORMAT)}",
                         help="Folder to put the output of the segmentation. This folder "
-                             "will be located in the folder mid/generated/<algorithm>/")
+                             "will be located in the folder mid/generated/<algorithm>/. The default is the current time"
+                             " in the form YYYYMMDD_HHMMSS")
 
     parser.add_argument("--algorithm",
                         default=["graph"],
