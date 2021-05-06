@@ -38,7 +38,6 @@ def segment_graph(midi_path: str, melody_track: int, output_folder: str,
     mid_location = f"mid/generated/graph/{output_folder}/{mid_name}"
     pathlib.Path(mid_location).mkdir(parents=True, exist_ok=True)
 
-
     graph = MidiGraph(mid_file, melody_track, chord_track)
 
     for (index, segment) in enumerate(segments):

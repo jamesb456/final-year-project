@@ -59,7 +59,15 @@ if __name__ == '__main__':
     queries = pathlib.Path(f"mid/queries/{args.query_set}")
     if not queries.exists():
         sys.stderr.write(f"Error: the query set {args.query_set} does not exist\n")
-        sys.stderr.write("Query sets are created using the create_query_midis.py script and are located in mid/queries")
+        sys.stderr.write("Query sets are created using the create_query_midis.py script "
+                         "and are located in mid/queries\n")
+        sys.stderr.write("The available query sets are currently:\n")
+
+        ls_output = pathlib.Path("mid/queries/").iterdir()
+        for file_folder in ls_output:
+            if file_folder.is_dir():
+                sys.stderr.write(f"\t{file_folder.name}\n")
+
         sys.stderr.flush()
         sys.exit(1)
 

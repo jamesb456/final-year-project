@@ -40,15 +40,15 @@ if __name__ == "__main__":
             if file_folder.is_dir():
                 print(f"\t{file_folder.name}")
     else:
-        if args.pv_dataset is None and args.graph_dataset is None:
-            sys.stderr.write("error: at least one index needs to be specified: run python server.py -h "
+        if args.pv_index is None and args.graph_index is None:
+            sys.stderr.write(f"error: at least one index needs to be specified: run {sys.argv[0]} -h"
                              "for more info\n")
             sys.stderr.flush()
             sys.exit(1)
         else:
             server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
             query_handler_pb2_grpc.add_QueryHandlerServicer_to_server(
-                QueryServicer(args.graph_dataset, args.pv_dataset, args.pv_veclength), server)
+                QueryServicer(args.graph_index, args.pv_index, args.pv_veclength), server)
             server.add_insecure_port('[::]:8007')  # ipv6
             server.start()
             server.wait_for_termination()
