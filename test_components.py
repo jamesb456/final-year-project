@@ -1,6 +1,7 @@
 #  run everything: showing everything working
 import contextlib
 import pathlib
+import shutil
 import time
 
 import tqdm
@@ -17,10 +18,22 @@ from project.algorithms.query_creation import indexed_query_creator
 if __name__ == '__main__':
     # segmentation
     print("Testing all components of the system together")
-    print("Using a small version of the nottingham dataset (nottingham-mini)")
+    print("Using a small version of the nottingham dataset (only the ashover songs)")
+    print("Create/use a nottingham-mini dataset only containing these songs (@ mid/nottingham-mini )")
+
+    ashover_files = list(pathlib.Path("mid/nottingham").glob("ashover*.mid"))  # files to copy
+    nottingham_mini_path = pathlib.Path("mid/nottingham-mini")
+
+    if not nottingham_mini_path.exists():
+        print("No nottingham-mini directory: creating it and copying the ashover files to it.")
+        nottingham_mini_path.mkdir(parents=True)
+        for file in ashover_files:
+            shutil.copy(file, nottingham_mini_path)
+        print("Done copying")
+
+    nottingham_mini_files = pathlib.Path("mid/nottingham-mini").glob("*.mid")
 
     print("First: indexing (using both the pitch vector and graph based methods)")
-    nottingham_mini_files = list(pathlib.Path("mid/nottingham-mini").glob("*.mid"))
     for file in tqdm.tqdm(nottingham_mini_files, desc="Graph Algorithm indexing progress"):
         with open(os.devnull, 'w') as void:
             with contextlib.redirect_stderr(void):

@@ -22,3 +22,5 @@ error.log
 
 .ipynb_checkpoints/demo-checkpoint.ipynb
 /mid/kmeans_test/
+
+mid/nottingham-mini/
