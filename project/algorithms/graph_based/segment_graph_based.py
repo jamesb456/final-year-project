@@ -10,7 +10,7 @@ from mido import MidiFile
 from project.algorithms.core.chord import Chord
 from project.algorithms.graph_based.midi_graph import MidiGraph
 from project.algorithms.graph_based.lbdm_segmenter import LbdmSegmenter
-from project.algorithms.core.midtools import is_note_on, is_note_off
+from project.algorithms.core.midtools import is_note_on, is_note_off, is_monophonic
 
 
 def segment_graph(midi_path: str, melody_track: int, output_folder: str,
@@ -24,13 +24,11 @@ def segment_graph(midi_path: str, melody_track: int, output_folder: str,
     print("\n=========================================================")
     print(f"Segmenting {mid_name}.mid to build up a graph of segments:")
     print("=========================================================")
-    for (msg1, msg2) in zip(mid_file.tracks[melody_track][1:], mid_file.tracks[melody_track]):
-        if (is_note_on(msg1) and is_note_on(msg2)) \
-                or (is_note_off(msg1) and is_note_off(msg2)):
-            sys.stderr.write(f"Error for Midi File @ {midi_path}: "
-                             f"this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
-            sys.stderr.flush()
-            return -1
+    if not is_monophonic(mid_file.tracks[melody_track]):
+        sys.stderr.write(f"Error for Midi File @ {midi_path}: "
+                         f"this track is polyphonic, therefore it cannot be processed by this algorithm.\n")
+        sys.stderr.flush()
+        return -1
 
     segments = segmenter.create_segments(mid_file, melody_track, chord_track=chord_track)
     print("Done Segmentation")

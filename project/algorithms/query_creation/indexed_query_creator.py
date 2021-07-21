@@ -9,6 +9,7 @@ from mido import MidiFile
 from tqdm import tqdm
 
 from project.algorithms.core.midi_segment import MidiSegment
+from project.algorithms.core.midtools import is_monophonic
 from project.algorithms.core.note_segment import NoteSegment
 from project.algorithms.core.segmenter import Segmenter
 from project.algorithms.query_creation.query_creator import QueryCreator
@@ -46,11 +47,17 @@ class IndexedQueryCreator(QueryCreator):
             rng = np.random.default_rng()
         mid_location = pathlib.Path(mid_folder)
         print("Loading MIDI files")
-        available_mids = list(map(lambda path: MidiFile(path), mid_location.glob("*.mid")))
-        print("MIDI files loaded.")
+
+        # get all midi files
+        all_mids = list(map(lambda path: MidiFile(path), mid_location.glob("*.mid")))
+        print(f"{len(all_mids)} MIDI files found")
+        # remove any polyphonic files
+        available_mids = list(filter(lambda file: is_monophonic(file.tracks[melody_track]), all_mids))
+        print(f"{len(all_mids) - len(available_mids)} polyphonic MIDIs ignored. Total is now {len(available_mids)}")
+
         # create segments, then sample from them
         segments = []
-        for mid in tqdm(available_mids, desc="Segmenting all input MIDI"):
+        for mid in tqdm(available_mids, desc="Segmenting MIDI files"):
             segments.extend(self.segmenter.create_segments(mid, melody_track, **segmenter_args))
 
         total_length = len(segments)

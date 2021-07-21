@@ -502,3 +502,19 @@ def transpose_keysig_down(msg) -> Optional[MetaMessage]:
     else:
         return None
 
+
+def is_monophonic(track: MidiTrack) -> bool:
+    """
+    Returns whether the MidiTrack ``track`` is monophonic (i.e. whether the track has at most one note playing at any
+    given time)
+
+    Args:
+        track: The MidiTrack to query
+
+    Returns:
+        True if the track is monophonic, False otherwise
+    """
+    for (msg1, msg2) in zip(track[1:], track):
+        if (is_note_on(msg1) and is_note_on(msg2)) or (is_note_off(msg1) and is_note_off(msg2)):
+            return False
+    return True
