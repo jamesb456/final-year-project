@@ -45,10 +45,9 @@ pip install --upgrade setuptools
 
 6. If on Windows, install the package `pygraphviz` first (it can be quite fussy with libraries)
 ```
-python -m pip install --global-option=build_ext --global-option="-IC:\Program Files\Graphviz\include" --global-option="-LC:\Program Files\Graphviz\lib" `
-              pygraphviz
+python -m pip install --global-option=build_ext --global-option="-IC:\Program Files\Graphviz\include" --global-option="-LC:\Program Files\Graphviz\lib" pygraphviz
 ```
-It might ask for Visual Studio be downloaded as well at this point.
+It might ask for Visual Studio Build tools be downloaded as well (if its not already installed)
    
 7. Install the rest of the requirements:
 ```
@@ -65,5 +64,11 @@ The output of each cell should be visible anyway so that should be sufficient
   the `dataset` argument should be a folder contained in `mid\generated\pitch_vector`)
 - You can see what indexed datasets are able to be used with `server.py` with the switch `--list_indexes`
 - Contact me if there are any other issues not listed here. From trying to get this set up
-on different systems with different Operating Systems, I've tried to note all
-  the points where it wrong for me.
+on different systems with different Operating Systems, I've tried to note all the points where it wrong for me.
+
+## Example commands
+
+- Segmenting: `python segment.py -o test --algorithm pitch_vector --melody_track 0 --n_processes 2 mid\nottingham\*.mid`
+- Creating queries `python create_query_midis.py --rng_seed 0 mid\nottingham 100 test_queries indexed --algorithm pitch_vector --melody_track 0`
+- Query server `python server.py --graph_index none --pv_index test --pv_veclength 8`
+- Query client `python query_client.py --melody_track 0 pitch_vector test_queries`
